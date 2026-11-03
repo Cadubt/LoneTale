@@ -16,19 +16,31 @@ diferentes — **sem alterar o código da aplicação**.
 
 ## Estado atual
 
+As **fases 1 a 4** do roteiro de desenvolvimento estão construídas; as **fases 5
+a 8**, parcial ou não iniciadas. O quadro honesto, fase por fase e requisito por
+requisito, está em **[`docs/planejamento-tecnico.md`](docs/planejamento-tecnico.md)**
+— inclusive a matriz de conformidade e os 14 testes obrigatórios.
+
 | Componente | Situação |
 |---|---|
-| **Adventure Engine** (`packages/engine`) | Implementado e coberto por testes (57 testes) |
-| **Contrato JSON + validação** | Implementado (JSON Schema 2020-12 + validação semântica) |
-| **Persistence Layer** (`apps/api`) | Entidades, migration inicial e serviços transacionais implementados |
-| **API REST + Swagger** | Implementada (auth, catálogo, Studio, partidas, telemetria) |
-| **LoneTale Player** (`apps/web`) | Implementado (catálogo, criação de personagem, jogo, combate, comércio) |
-| **Adventure Studio** | Importação, validação, publicação e mapa visual da história. Edição nó a nó na interface ainda não existe |
-| **Experiências imersivas (Meta Quest 3)** | Não iniciado — a arquitetura reserva espaço (aparência persistida, motor separado do frontend) |
+| **Adventure Engine** (`packages/engine`) | Pronto — 57 testes |
+| **Contrato JSON + validação** | Pronto — JSON Schema 2020-12 + validação semântica |
+| **API REST + Swagger** | Pronto — auth, catálogo, Studio, partidas, telemetria |
+| **Persistence Layer** | Escrito e tipado, **nunca executado contra um banco** |
+| **LoneTale Player** (`apps/web`) | Pronto — catálogo, criação de personagem, jogo, combate, comércio |
+| **Adventure Studio** | Parcial — importa, valida, publica e desenha o mapa; **sem edição visual, editor JSON decente ou simulador** |
+| **Combate** | Parcial — faltam resistências, vulnerabilidades, comportamento, ação Defender e efeitos temporários |
+| **Imagens e narração por voz** | Não feito |
+| **WebXR / Meta Quest** | Não iniciado — fora do MVP por decisão; a arquitetura reserva espaço |
 
-Nada foi executado contra um SQL Server real nesta máquina: as migrations e a
-camada de persistência **não foram validadas contra um banco**. O motor, sim —
-ele roda independentemente do banco e do frontend.
+Dois pontos que valem destaque, porque mudam o que você pode concluir do resto:
+
+**Nada rodou contra um SQL Server.** As migrations e a camada de persistência
+não foram validadas contra um banco, e nenhuma migration foi executada em lugar
+nenhum. O motor, sim — ele roda sem banco e sem frontend.
+
+**Cobertura de testes: 5 dos 14 cenários obrigatórios.** Os cinco que existem
+são os que exercitam o motor. Os outros nove precisam de banco.
 
 ---
 
@@ -161,7 +173,7 @@ Validar uma aventura pela linha de comando (útil em CI):
 
 ```bash
 npm run build:engine
-node packages/engine/dist/cli/validate-adventure.js examples/adventures/a-ponte-quebrada.json
+node packages/engine/dist/cli/validate-adventure.js adventures/ponte-das-sombras/aventura.json
 ```
 
 ---
@@ -170,7 +182,7 @@ node packages/engine/dist/cli/validate-adventure.js examples/adventures/a-ponte-
 
 Uma aventura é um grafo direcionado de nós narrativos, declarado em JSON e
 validado contra um contrato versionado. O exemplo completo e comentado está em
-[`examples/adventures/a-ponte-quebrada.json`](examples/adventures/a-ponte-quebrada.json)
+[`adventures/ponte-das-sombras/aventura.json`](adventures/ponte-das-sombras/aventura.json)
 — ele implementa exatamente a cena da ponte do projeto original:
 
 ```json
@@ -240,8 +252,8 @@ apps/api/               API NestJS
   src/game/             Execução transacional das partidas
 
 apps/web/               Player + Studio (React)
-examples/adventures/    Aventura de exemplo
-docs/                   Arquitetura, banco de dados, formato JSON, segurança
+adventures/             Aventura demonstrativa "A Ponte das Sombras"
+docs/                   Planejamento técnico, arquitetura, banco, JSON, segurança
 ```
 
 ---

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CONDITION_TYPES, EFFECT_TYPES, NODE_TYPES } from '../registry';
 import { ADVENTURE_JSON_SCHEMA } from '../schema';
 import { validateAdventure } from '../validation/validate-adventure';
-import { BRIDGE_ADVENTURE_FILE, loadExampleAdventure } from './helpers/load-example';
+import { loadDemoAdventure } from './helpers/load-adventure';
 
 /** Extrai os valores de `type.const` de uma lista `oneOf` do schema. */
 function constTypesFromOneOf(definition: unknown): string[] {
@@ -44,7 +44,7 @@ describe('contrato: schema x tipos TypeScript', () => {
 });
 
 describe('validacao da aventura de exemplo', () => {
-  const adventure = loadExampleAdventure(BRIDGE_ADVENTURE_FILE);
+  const adventure = loadDemoAdventure();
 
   it('passa sem nenhum erro', () => {
     const result = validateAdventure(adventure);
@@ -59,7 +59,7 @@ describe('validacao da aventura de exemplo', () => {
 });
 
 describe('validacao: documentos invalidos', () => {
-  const base = loadExampleAdventure(BRIDGE_ADVENTURE_FILE);
+  const base = loadDemoAdventure();
 
   it('rejeita estrutura fora do contrato', () => {
     const result = validateAdventure({ schemaVersion: '1.0.0' });

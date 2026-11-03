@@ -6,7 +6,7 @@ import { CompiledAdventure, compileAdventure } from '../compile/compiled-adventu
 import { EngineError } from '../errors';
 import { SeededRng } from '../random/rng';
 import type { AdventureDocument } from '../types/adventure';
-import { BRIDGE_ADVENTURE_FILE, loadExampleAdventure } from './helpers/load-example';
+import { loadDemoAdventure } from './helpers/load-adventure';
 
 const BALANCED = { forca: 11, destreza: 11, inteligencia: 11, constituicao: 11 };
 
@@ -16,7 +16,7 @@ describe('criacao de personagem', () => {
   let rng: SeededRng;
 
   beforeEach(() => {
-    doc = loadExampleAdventure(BRIDGE_ADVENTURE_FILE);
+    doc = loadDemoAdventure();
     compiled = compileAdventure(doc);
     rng = new SeededRng('criacao');
   });

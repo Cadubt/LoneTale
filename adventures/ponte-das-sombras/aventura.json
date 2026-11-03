@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0.0",
   "metadata": {
-    "id": "a-ponte-quebrada",
-    "title": "A Ponte Quebrada",
+    "id": "ponte-das-sombras",
+    "title": "A Ponte das Sombras",
     "version": "1.0.0",
     "summary": "Uma travessia impossível, um guardião silencioso e quatro caminhos possíveis.",
     "description": "Aventura de demonstração do LoneTale. Mostra condições declarativas, efeitos transacionais, testes de habilidade, combate e finais múltiplos — tudo definido neste JSON, sem uma linha de código específica da história.",
@@ -75,7 +75,7 @@
   },
 
   "characterCreation": {
-    "startNodeId": "clareira-inicial",
+    "startNodeId": "introducao",
     "intro": "Antes de partir, diga ao mundo quem você é.",
     "name": {
       "required": true,
@@ -480,17 +480,35 @@
   ],
 
   "assets": [
-    { "id": "img-capa", "kind": "image", "src": "/media/a-ponte-quebrada/capa.webp", "alt": "Uma ponte de pedra partida sobre um abismo enevoado" },
-    { "id": "img-floresta", "kind": "image", "src": "/media/a-ponte-quebrada/floresta.webp", "alt": "Floresta antiga de troncos altos" },
-    { "id": "img-ponte", "kind": "image", "src": "/media/a-ponte-quebrada/ponte.webp", "alt": "Ponte de pedra desmoronada" },
-    { "id": "img-guardiao", "kind": "image", "src": "/media/a-ponte-quebrada/guardiao.webp", "alt": "Guardião de pedra imóvel" },
-    { "id": "img-corda", "kind": "image", "src": "/media/a-ponte-quebrada/corda.webp", "alt": "Corda de cânhamo enrolada" },
-    { "id": "img-outro-lado", "kind": "image", "src": "/media/a-ponte-quebrada/outro-lado.webp", "alt": "Ruínas vistas do outro lado do abismo" },
-    { "id": "som-tensao", "kind": "audio", "src": "/media/a-ponte-quebrada/tensao.ogg", "durationMs": 95000 },
-    { "id": "som-floresta", "kind": "audio", "src": "/media/a-ponte-quebrada/floresta.ogg", "durationMs": 120000 }
+    { "id": "img-capa", "kind": "image", "src": "/media/ponte-das-sombras/capa.webp", "alt": "Uma ponte de pedra partida sobre um abismo enevoado" },
+    { "id": "img-floresta", "kind": "image", "src": "/media/ponte-das-sombras/floresta.webp", "alt": "Floresta antiga de troncos altos" },
+    { "id": "img-ponte", "kind": "image", "src": "/media/ponte-das-sombras/ponte.webp", "alt": "Ponte de pedra desmoronada" },
+    { "id": "img-guardiao", "kind": "image", "src": "/media/ponte-das-sombras/guardiao.webp", "alt": "Guardião de pedra imóvel" },
+    { "id": "img-corda", "kind": "image", "src": "/media/ponte-das-sombras/corda.webp", "alt": "Corda de cânhamo enrolada" },
+    { "id": "img-outro-lado", "kind": "image", "src": "/media/ponte-das-sombras/outro-lado.webp", "alt": "Ruínas vistas do outro lado do abismo" },
+    { "id": "som-tensao", "kind": "audio", "src": "/media/ponte-das-sombras/tensao.ogg", "durationMs": 95000 },
+    { "id": "som-floresta", "kind": "audio", "src": "/media/ponte-das-sombras/floresta.ogg", "durationMs": 120000 }
   ],
 
   "nodes": [
+    {
+      "id": "introducao",
+      "type": "story",
+      "title": "A Ponte das Sombras",
+      "text": "Contam em Vharlen que a ponte caiu na mesma noite em que o último guardião foi posto a vigiá-la. Ninguém soube dizer o que veio primeiro.\n\nCem anos depois, você é a única pessoa que ainda acha que vale a pena atravessar.\n\nNão há ninguém para ajudar. Não há ninguém para culpar. O que você levar na mochila e o que você escolher no caminho é tudo o que existe entre você e o outro lado.",
+      "image": "img-capa",
+      "checkpoint": true,
+      "visual": { "position": { "x": -260, "y": 0 }, "color": "#d2721f", "icon": "book" },
+      "choices": [
+        {
+          "id": "comecar",
+          "label": "Começar a jornada",
+          "order": 1,
+          "target": { "kind": "node", "nodeId": "clareira-inicial" }
+        }
+      ]
+    },
+
     {
       "id": "clareira-inicial",
       "type": "story",

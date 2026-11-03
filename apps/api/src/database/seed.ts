@@ -101,7 +101,7 @@ async function main(): Promise<void> {
 
     const author = created.author as User;
 
-    const documentPath = join(ROOT, 'examples', 'adventures', 'a-ponte-quebrada.json');
+    const documentPath = join(ROOT, 'adventures', 'ponte-das-sombras', 'aventura.json');
     const document = JSON.parse(readFileSync(documentPath, 'utf8')) as AdventureDocument;
 
     const validation = validateAdventure(document);

@@ -6,7 +6,7 @@ import type { AdventureDocument } from '../types/adventure';
 import type { CharacterDraft } from '../types/actions';
 import type { GameState } from '../types/state';
 import type { NodeView } from '../types/view';
-import { BRIDGE_ADVENTURE_FILE, loadExampleAdventure } from './helpers/load-example';
+import { loadDemoAdventure } from './helpers/load-adventure';
 
 const APPEARANCE = { 'cor-da-pele': 'clara', porte: 'atletico' };
 const BALANCED = { forca: 11, destreza: 11, inteligencia: 11, constituicao: 11 };
@@ -33,12 +33,18 @@ function choiceView(view: NodeView, choiceId: string) {
   return view.choices.find((choice) => choice.id === choiceId);
 }
 
-/** Caminha da clareira inicial ate a ponte. */
-function walkToBridge(engine: AdventureEngine, classId: string, seed = 'teste') {
+/** Sai da introducao, passa pela clareira e chega a floresta antiga. */
+function enterForest(engine: AdventureEngine, classId: string, seed = 'teste') {
   let step = engine.startGame(draft(classId), { seed });
+  step = choose(engine, step.state, 'comecar');
   step = choose(engine, step.state, 'seguir-trilha');
-  step = choose(engine, step.state, 'ir-ao-desfiladeiro');
   return step;
+}
+
+/** Caminha da introducao ate a ponte. */
+function walkToBridge(engine: AdventureEngine, classId: string, seed = 'teste') {
+  const step = enterForest(engine, classId, seed);
+  return choose(engine, step.state, 'ir-ao-desfiladeiro');
 }
 
 describe('motor: fluxo da aventura de exemplo', () => {
@@ -46,19 +52,19 @@ describe('motor: fluxo da aventura de exemplo', () => {
   let engine: AdventureEngine;
 
   beforeEach(() => {
-    doc = loadExampleAdventure(BRIDGE_ADVENTURE_FILE);
+    doc = loadDemoAdventure();
     engine = new AdventureEngine(doc);
   });
 
   it('inicia a partida no no inicial, com checkpoint gravado', () => {
     const step = engine.startGame(draft('explorador'), { seed: 'inicio' });
 
-    expect(step.state.currentNodeId).toBe('clareira-inicial');
+    expect(step.state.currentNodeId).toBe('introducao');
     expect(step.state.status).toBe('active');
     expect(step.state.sequence).toBe(1);
-    expect(step.state.visitedNodes['clareira-inicial']).toBe(1);
-    expect(step.state.checkpoint?.nodeId).toBe('clareira-inicial');
-    expect(step.view.node.title).toBe('A clareira');
+    expect(step.state.visitedNodes['introducao']).toBe(1);
+    expect(step.state.checkpoint?.nodeId).toBe('introducao');
+    expect(step.view.node.title).toBe('A Ponte das Sombras');
     expect(step.view.availableActions).toContain('choose');
     expect(step.events.some((event) => event.type === 'nodeEntered')).toBe(true);
   });
@@ -145,8 +151,7 @@ describe('motor: fluxo da aventura de exemplo', () => {
   });
 
   it('concede a recompensa de descoberta apenas uma vez', () => {
-    let step = engine.startGame(draft('guerreiro'), { seed: 'descoberta' });
-    step = choose(engine, step.state, 'seguir-trilha');
+    let step = enterForest(engine, 'guerreiro', 'descoberta');
     step = choose(engine, step.state, 'revirar-matagal');
 
     expect(step.state.currentNodeId).toBe('descoberta-corda');
@@ -196,7 +201,7 @@ describe('motor: fluxo da aventura de exemplo', () => {
 
 describe('motor: teste de habilidade', () => {
   function engineWithDifficulty(difficulty: number): AdventureEngine {
-    const doc = loadExampleAdventure(BRIDGE_ADVENTURE_FILE);
+    const doc = loadDemoAdventure();
     const node = doc.nodes.find((candidate) => candidate.id === 'travessia-com-corda');
     if (!node || node.type !== 'skillCheck') {
       throw new Error('No de teste de habilidade nao encontrado.');
@@ -242,7 +247,7 @@ describe('motor: teste de habilidade', () => {
   });
 
   it('permite nova tentativa quando a aventura habilita retryAllowed', () => {
-    const doc = loadExampleAdventure(BRIDGE_ADVENTURE_FILE);
+    const doc = loadDemoAdventure();
     const node = doc.nodes.find((candidate) => candidate.id === 'travessia-com-corda');
     if (!node || node.type !== 'skillCheck') {
       throw new Error('No de teste de habilidade nao encontrado.');
@@ -268,7 +273,7 @@ describe('motor: combate', () => {
   let engine: AdventureEngine;
 
   beforeEach(() => {
-    engine = new AdventureEngine(loadExampleAdventure(BRIDGE_ADVENTURE_FILE));
+    engine = new AdventureEngine(loadDemoAdventure());
   });
 
   function enterCombat(seed: string) {
@@ -363,7 +368,7 @@ describe('motor: combate', () => {
   });
 
   it('permite fugir quando o encontro autoriza', () => {
-    const doc = loadExampleAdventure(BRIDGE_ADVENTURE_FILE);
+    const doc = loadDemoAdventure();
     // Fuga garantida: dificuldade minima no teste do ruleset.
     doc.ruleset.combat.fleeCheck = { attributeId: 'destreza', dice: '1d20', difficulty: -100 };
     const fleeEngine = new AdventureEngine(doc);
@@ -415,14 +420,12 @@ describe('motor: comerciante', () => {
   let engine: AdventureEngine;
 
   beforeEach(() => {
-    engine = new AdventureEngine(loadExampleAdventure(BRIDGE_ADVENTURE_FILE));
+    engine = new AdventureEngine(loadDemoAdventure());
   });
 
   function atMerchant(classId = 'guerreiro') {
-    let step = engine.startGame(draft(classId), { seed: 'mercado' });
-    step = choose(engine, step.state, 'seguir-trilha');
-    step = choose(engine, step.state, 'procurar-mercador');
-    return step;
+    const step = enterForest(engine, classId, 'mercado');
+    return choose(engine, step.state, 'procurar-mercador');
   }
 
   it('lista o estoque com preco e indica o que o jogador pode pagar', () => {
@@ -462,7 +465,7 @@ describe('motor: comerciante', () => {
   });
 
   it('respeita o estoque limitado declarado no no', () => {
-    const doc = loadExampleAdventure(BRIDGE_ADVENTURE_FILE);
+    const doc = loadDemoAdventure();
     const merchant = doc.nodes.find((node) => node.id === 'mercador-ambulante');
     if (!merchant || merchant.type !== 'merchant') {
       throw new Error('No de comerciante nao encontrado.');
@@ -475,8 +478,7 @@ describe('motor: comerciante', () => {
     torch.quantity = 2;
     const limited = new AdventureEngine(doc);
 
-    let step = limited.startGame(draft('guerreiro'), { seed: 'estoque' });
-    step = choose(limited, step.state, 'seguir-trilha');
+    let step = enterForest(limited, 'guerreiro', 'estoque');
     step = choose(limited, step.state, 'procurar-mercador');
 
     step = limited.apply(step.state, {
@@ -540,7 +542,7 @@ describe('motor: finais', () => {
   let engine: AdventureEngine;
 
   beforeEach(() => {
-    engine = new AdventureEngine(loadExampleAdventure(BRIDGE_ADVENTURE_FILE));
+    engine = new AdventureEngine(loadDemoAdventure());
   });
 
   it('encerra a partida ao alcancar um no de final', () => {

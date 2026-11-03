@@ -7,7 +7,7 @@ apenas o interpreta.
 
 - Contrato: [`packages/engine/src/schema/adventure.schema.json`](../packages/engine/src/schema/adventure.schema.json) (JSON Schema 2020-12)
 - Pelo ar: `GET /api/adventures/schema`
-- Exemplo completo: [`examples/adventures/a-ponte-quebrada.json`](../examples/adventures/a-ponte-quebrada.json)
+- Exemplo completo: [`adventures/ponte-das-sombras/aventura.json`](../adventures/ponte-das-sombras/aventura.json)
 - Validar sem gravar: `POST /api/adventures/validate`
 
 ```bash

@@ -2,7 +2,7 @@
 /**
  * Validador de aventuras em linha de comando.
  *
- *   node dist/cli/validate-adventure.js examples/adventures/*.json
+ *   node dist/cli/validate-adventure.js adventures/ponte-das-sombras/aventura.json
  *
  * Sai com codigo 1 quando ha erros, permitindo usar em CI e em ganchos de
  * pre-commit do Studio.
