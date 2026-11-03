@@ -1,0 +1,31 @@
+{
+  "name": "lonetale",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LoneTale - plataforma web de aventuras solo de RPG narrativo (ecossistema TavernTale)",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @lonetale/engine && npm run build -w @lonetale/api && npm run build -w @lonetale/web",
+    "build:engine": "npm run build -w @lonetale/engine",
+    "dev:api": "npm run start:dev -w @lonetale/api",
+    "dev:web": "npm run dev -w @lonetale/web",
+    "test": "npm run test -w @lonetale/engine",
+    "test:engine": "npm run test -w @lonetale/engine",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint:adventure": "npm run validate -w @lonetale/engine --",
+    "migration:run": "npm run migration:run -w @lonetale/api",
+    "migration:revert": "npm run migration:revert -w @lonetale/api",
+    "migration:generate": "npm run migration:generate -w @lonetale/api --"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.12",
+    "typescript": "5.4.5"
+  }
+}

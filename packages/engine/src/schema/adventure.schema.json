@@ -1,0 +1,1651 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lonetale.taverntale.com.br/schema/adventure/1.0.0.json",
+  "title": "LoneTale Adventure Document",
+  "description": "Contrato versionado de uma aventura solo do LoneTale. Toda a logica da historia vive neste documento; o motor apenas o interpreta.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "metadata",
+    "ruleset",
+    "characterCreation",
+    "attributes",
+    "resources",
+    "classes",
+    "races",
+    "nodes",
+    "endings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "metadata": { "$ref": "#/$defs/metadata" },
+    "ruleset": { "$ref": "#/$defs/ruleset" },
+    "characterCreation": { "$ref": "#/$defs/characterCreation" },
+    "attributes": { "type": "array", "items": { "$ref": "#/$defs/attribute" } },
+    "resources": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/resource" } },
+    "classes": { "type": "array", "items": { "$ref": "#/$defs/class" } },
+    "races": { "type": "array", "items": { "$ref": "#/$defs/race" } },
+    "skills": { "type": "array", "items": { "$ref": "#/$defs/skill" } },
+    "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "enemies": { "type": "array", "items": { "$ref": "#/$defs/enemy" } },
+    "npcs": { "type": "array", "items": { "$ref": "#/$defs/npc" } },
+    "quests": { "type": "array", "items": { "$ref": "#/$defs/quest" } },
+    "variables": { "type": "array", "items": { "$ref": "#/$defs/variable" } },
+    "nodes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/node" } },
+    "endings": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/ending" } },
+    "assets": { "type": "array", "items": { "$ref": "#/$defs/asset" } }
+  },
+
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$",
+      "description": "Identificador estavel, unico dentro da sua colecao."
+    },
+    "dice": {
+      "type": "string",
+      "pattern": "^\\s*\\d{1,3}\\s*[dD]\\s*\\d{1,4}\\s*([+-]\\s*\\d{1,4}\\s*)?$",
+      "description": "Expressao de dados, ex.: 1d6, 1d20, 2d6+3."
+    },
+    "jsonPrimitive": {
+      "type": ["string", "number", "boolean", "null"]
+    },
+    "numberMap": {
+      "type": "object",
+      "additionalProperties": { "type": "number" },
+      "propertyNames": { "$ref": "#/$defs/id" }
+    },
+    "idArray": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+    "tags": { "type": "array", "items": { "type": "string" } },
+
+    "metadata": {
+      "type": "object",
+      "required": ["id", "title", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+(\\.\\d+)?$" },
+        "summary": { "type": "string", "maxLength": 500 },
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "language": { "type": "string" },
+        "genre": { "type": "array", "items": { "type": "string" } },
+        "world": { "type": "string" },
+        "tags": { "$ref": "#/$defs/tags" },
+        "coverImage": { "$ref": "#/$defs/id" },
+        "bannerImage": { "$ref": "#/$defs/id" },
+        "estimatedMinutes": { "type": "integer", "minimum": 0 },
+        "difficulty": { "enum": ["easy", "normal", "hard", "brutal"] },
+        "contentWarnings": { "type": "array", "items": { "type": "string" } },
+        "ageRating": { "type": "string" }
+      }
+    },
+
+    "ruleset": {
+      "type": "object",
+      "required": ["id", "name", "skillCheck", "combat", "progression", "death"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "allowedDice": { "type": "array", "items": { "$ref": "#/$defs/dice" } },
+        "skillCheck": {
+          "type": "object",
+          "required": ["mode", "defaultDice"],
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "enum": ["diceVsDifficulty", "attributeVsDifficulty"] },
+            "defaultDice": { "$ref": "#/$defs/dice" },
+            "attributeModifier": {
+              "type": "object",
+              "required": ["divisor", "offset"],
+              "additionalProperties": false,
+              "properties": {
+                "divisor": { "type": "number", "exclusiveMinimum": 0 },
+                "offset": { "type": "number" }
+              }
+            },
+            "criticalSuccessOn": { "type": "integer" },
+            "criticalFailureOn": { "type": "integer" },
+            "skillBonus": { "type": "number" }
+          }
+        },
+        "combat": {
+          "type": "object",
+          "required": ["enabled", "initiative", "fleeAllowed", "armorMode"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "initiative": { "enum": ["playerFirst", "enemyFirst", "roll"] },
+            "initiativeDice": { "$ref": "#/$defs/dice" },
+            "fleeAllowed": { "type": "boolean" },
+            "fleeCheck": {
+              "type": "object",
+              "required": ["difficulty"],
+              "additionalProperties": false,
+              "properties": {
+                "attributeId": { "$ref": "#/$defs/id" },
+                "dice": { "$ref": "#/$defs/dice" },
+                "difficulty": { "type": "number" }
+              }
+            },
+            "armorMode": { "enum": ["subtract", "ignore"] },
+            "minimumDamage": { "type": "integer", "minimum": 0 },
+            "attackRules": {
+              "type": "object",
+              "required": ["mode"],
+              "additionalProperties": false,
+              "properties": {
+                "mode": { "enum": ["rollToHit", "alwaysHit"] },
+                "hitDice": { "$ref": "#/$defs/dice" },
+                "attackAttributeId": { "$ref": "#/$defs/id" },
+                "damageAttributeId": { "$ref": "#/$defs/id" },
+                "playerDefenseBase": { "type": "number" },
+                "defenseAttributeId": { "$ref": "#/$defs/id" },
+                "unarmedDamageDice": { "$ref": "#/$defs/dice" }
+              }
+            },
+            "maxRounds": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "progression": {
+          "type": "object",
+          "required": ["enabled", "xpThresholds"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "xpThresholds": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+            "maxLevel": { "type": "integer", "minimum": 1 },
+            "onLevelUp": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "attributePoints": { "type": "integer", "minimum": 0 },
+                "skillChoices": { "type": "integer", "minimum": 0 },
+                "resourceGains": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["resourceId", "maxDelta"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "resourceId": { "$ref": "#/$defs/id" },
+                      "maxDelta": { "type": "number" },
+                      "restore": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "death": {
+          "type": "object",
+          "required": ["onVitalDepleted"],
+          "additionalProperties": false,
+          "properties": {
+            "onVitalDepleted": { "enum": ["ending", "restartCheckpoint", "goto"] },
+            "endingId": { "$ref": "#/$defs/id" },
+            "nodeId": { "$ref": "#/$defs/id" },
+            "vitalResourceId": { "$ref": "#/$defs/id" }
+          }
+        },
+        "economy": {
+          "type": "object",
+          "required": ["currencyName"],
+          "additionalProperties": false,
+          "properties": {
+            "currencyName": { "type": "string" },
+            "currencyAbbreviation": { "type": "string" },
+            "merchantBuybackRate": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "inventory": {
+          "type": "object",
+          "required": ["equipmentSlots"],
+          "additionalProperties": false,
+          "properties": {
+            "maxSlots": { "type": "integer", "minimum": 1 },
+            "maxWeight": { "type": "number", "minimum": 0 },
+            "equipmentSlots": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+
+    "attribute": {
+      "type": "object",
+      "required": ["id", "name", "min", "max", "default"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "abbreviation": { "type": "string", "maxLength": 6 },
+        "description": { "type": "string" },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "default": { "type": "number" },
+        "visible": { "type": "boolean" }
+      }
+    },
+
+    "resource": {
+      "type": "object",
+      "required": ["id", "name", "base"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "abbreviation": { "type": "string", "maxLength": 6 },
+        "description": { "type": "string" },
+        "base": { "type": "number" },
+        "derivedFrom": {
+          "type": "object",
+          "required": ["attributeId", "multiplier"],
+          "additionalProperties": false,
+          "properties": {
+            "attributeId": { "$ref": "#/$defs/id" },
+            "multiplier": { "type": "number" }
+          }
+        },
+        "perLevel": { "type": "number" },
+        "vital": { "type": "boolean" },
+        "regenPerNode": { "type": "number" },
+        "color": { "type": "string" }
+      }
+    },
+
+    "modifierSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "attributes": { "$ref": "#/$defs/numberMap" },
+        "resources": { "$ref": "#/$defs/numberMap" }
+      }
+    },
+
+    "startingItem": {
+      "type": "object",
+      "required": ["itemId"],
+      "additionalProperties": false,
+      "properties": {
+        "itemId": { "$ref": "#/$defs/id" },
+        "quantity": { "type": "integer", "minimum": 1 },
+        "equip": { "type": "boolean" },
+        "slot": { "type": "string" }
+      }
+    },
+
+    "class": {
+      "type": "object",
+      "required": ["id", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "modifiers": { "$ref": "#/$defs/modifierSet" },
+        "startingSkillIds": { "$ref": "#/$defs/idArray" },
+        "startingItems": { "type": "array", "items": { "$ref": "#/$defs/startingItem" } },
+        "allowedRaceIds": { "$ref": "#/$defs/idArray" },
+        "portrait": { "$ref": "#/$defs/id" },
+        "tags": { "$ref": "#/$defs/tags" }
+      }
+    },
+
+    "race": {
+      "type": "object",
+      "required": ["id", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "modifiers": { "$ref": "#/$defs/modifierSet" },
+        "traitIds": { "$ref": "#/$defs/idArray" },
+        "allowedClassIds": { "$ref": "#/$defs/idArray" },
+        "portrait": { "$ref": "#/$defs/id" },
+        "appearanceRestrictions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/idArray" }
+        }
+      }
+    },
+
+    "skill": {
+      "type": "object",
+      "required": ["id", "name", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "kind": { "enum": ["passive", "active", "proficiency"] },
+        "cost": {
+          "type": "object",
+          "required": ["resourceId", "amount"],
+          "additionalProperties": false,
+          "properties": {
+            "resourceId": { "$ref": "#/$defs/id" },
+            "amount": { "type": "number", "minimum": 0 }
+          }
+        },
+        "requirements": { "$ref": "#/$defs/condition" },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "combat": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "damageDice": { "$ref": "#/$defs/dice" },
+            "flatDamage": { "type": "number" },
+            "scalingAttributeId": { "$ref": "#/$defs/id" },
+            "healing": { "type": "number" },
+            "targets": { "enum": ["single", "all"] },
+            "cooldownRounds": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "icon": { "$ref": "#/$defs/id" },
+        "tags": { "$ref": "#/$defs/tags" }
+      }
+    },
+
+    "item": {
+      "type": "object",
+      "required": ["id", "name", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "kind": {
+          "enum": ["weapon", "armor", "shield", "accessory", "consumable", "quest", "misc"]
+        },
+        "slot": { "type": "string" },
+        "stackable": { "type": "boolean" },
+        "maxStack": { "type": "integer", "minimum": 1 },
+        "value": { "type": "number", "minimum": 0 },
+        "weight": { "type": "number", "minimum": 0 },
+        "stats": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "damageDice": { "$ref": "#/$defs/dice" },
+            "flatDamage": { "type": "number" },
+            "armor": { "type": "number" },
+            "attributeModifiers": { "$ref": "#/$defs/numberMap" },
+            "resourceMaxModifiers": { "$ref": "#/$defs/numberMap" }
+          }
+        },
+        "useEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "consumedOnUse": { "type": "boolean" },
+        "requirements": { "$ref": "#/$defs/condition" },
+        "bound": { "type": "boolean" },
+        "image": { "$ref": "#/$defs/id" },
+        "icon": { "$ref": "#/$defs/id" },
+        "tags": { "$ref": "#/$defs/tags" }
+      }
+    },
+
+    "enemy": {
+      "type": "object",
+      "required": ["id", "name", "hp"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "attributes": { "$ref": "#/$defs/numberMap" },
+        "hp": { "type": "integer", "minimum": 1 },
+        "armor": { "type": "number", "minimum": 0 },
+        "attack": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "dice": { "$ref": "#/$defs/dice" },
+            "flatDamage": { "type": "number" },
+            "hitBonus": { "type": "number" }
+          }
+        },
+        "defense": { "type": "number" },
+        "initiative": { "type": "number" },
+        "abilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "chance": { "type": "number", "minimum": 0, "maximum": 1 },
+              "damageDice": { "$ref": "#/$defs/dice" },
+              "flatDamage": { "type": "number" },
+              "healing": { "type": "number" },
+              "applyEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+              "cooldownRounds": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "loot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["itemId"],
+            "additionalProperties": false,
+            "properties": {
+              "itemId": { "$ref": "#/$defs/id" },
+              "quantity": { "type": "integer", "minimum": 1 },
+              "chance": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        },
+        "experience": { "type": "integer", "minimum": 0 },
+        "gold": {
+          "type": "object",
+          "required": ["min", "max"],
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "integer", "minimum": 0 },
+            "max": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "image": { "$ref": "#/$defs/id" },
+        "tags": { "$ref": "#/$defs/tags" },
+        "unique": { "type": "boolean" }
+      }
+    },
+
+    "npc": {
+      "type": "object",
+      "required": ["id", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "role": { "type": "string" },
+        "portrait": { "$ref": "#/$defs/id" },
+        "initialRelation": { "type": "number" },
+        "relationLabels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["atLeast", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "atLeast": { "type": "number" },
+              "label": { "type": "string" }
+            }
+          }
+        },
+        "tags": { "$ref": "#/$defs/tags" }
+      }
+    },
+
+    "quest": {
+      "type": "object",
+      "required": ["id", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "initialStatus": { "$ref": "#/$defs/questStatus" },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["stage"],
+            "additionalProperties": false,
+            "properties": {
+              "stage": { "type": "integer", "minimum": 0 },
+              "title": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "rewards": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "hidden": { "type": "boolean" }
+      }
+    },
+
+    "variable": {
+      "type": "object",
+      "required": ["id", "type", "initial"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "type": { "enum": ["number", "boolean", "string"] },
+        "initial": { "$ref": "#/$defs/jsonPrimitive" },
+        "visible": { "type": "boolean" },
+        "description": { "type": "string" }
+      }
+    },
+
+    "asset": {
+      "type": "object",
+      "required": ["id", "kind", "src"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["image", "audio", "video", "model"] },
+        "src": { "type": "string", "minLength": 1 },
+        "alt": { "type": "string" },
+        "credit": { "type": "string" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "durationMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "appearanceField": {
+      "type": "object",
+      "required": ["id", "label", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "kind": { "enum": ["select", "color", "text", "number"] },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "label": { "type": "string" },
+              "value": { "$ref": "#/$defs/jsonPrimitive" },
+              "color": { "type": "string" }
+            }
+          }
+        },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number" },
+        "unit": { "type": "string" },
+        "required": { "type": "boolean" },
+        "default": { "$ref": "#/$defs/jsonPrimitive" },
+        "maxLength": { "type": "integer", "minimum": 1 }
+      }
+    },
+
+    "characterCreation": {
+      "type": "object",
+      "required": ["startNodeId", "attributes"],
+      "additionalProperties": false,
+      "properties": {
+        "startNodeId": { "$ref": "#/$defs/id" },
+        "name": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "required": { "type": "boolean" },
+            "minLength": { "type": "integer", "minimum": 1 },
+            "maxLength": { "type": "integer", "minimum": 1 },
+            "suggestions": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "allowedClassIds": { "$ref": "#/$defs/idArray" },
+        "allowedRaceIds": { "$ref": "#/$defs/idArray" },
+        "attributes": {
+          "type": "object",
+          "required": ["method"],
+          "additionalProperties": false,
+          "properties": {
+            "method": { "enum": ["pointBuy", "fixed", "roll"] },
+            "points": { "type": "integer", "minimum": 0 },
+            "minPerAttribute": { "type": "number" },
+            "maxPerAttribute": { "type": "number" },
+            "rollDice": { "$ref": "#/$defs/dice" }
+          }
+        },
+        "startingGold": { "type": "integer", "minimum": 0 },
+        "startingItems": { "type": "array", "items": { "$ref": "#/$defs/startingItem" } },
+        "startingSkillIds": { "$ref": "#/$defs/idArray" },
+        "appearanceFields": { "type": "array", "items": { "$ref": "#/$defs/appearanceField" } },
+        "allowDescription": { "type": "boolean" },
+        "descriptionMaxLength": { "type": "integer", "minimum": 1 },
+        "intro": { "type": "string" }
+      }
+    },
+
+    "questStatus": { "enum": ["locked", "available", "active", "completed", "failed"] },
+    "comparisonOperator": { "enum": ["eq", "neq", "gt", "gte", "lt", "lte"] },
+
+    "condition": {
+      "description": "Condicao declarativa. Composicao via all/any/not. Nenhuma expressao e executada como codigo.",
+      "type": "object",
+      "required": ["type"],
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "all" },
+            "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } }
+          },
+          "required": ["type", "conditions"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "any" },
+            "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } }
+          },
+          "required": ["type", "conditions"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "not" },
+            "condition": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "condition"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": { "type": { "const": "always" } },
+          "required": ["type"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": { "type": { "const": "never" } },
+          "required": ["type"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "hasItem" },
+            "itemId": { "$ref": "#/$defs/id" },
+            "quantity": { "type": "integer", "minimum": 1 }
+          },
+          "required": ["type", "itemId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "hasEquippedItem" },
+            "itemId": { "$ref": "#/$defs/id" },
+            "slot": { "type": "string" }
+          },
+          "required": ["type"],
+          "anyOf": [{ "required": ["itemId"] }, { "required": ["slot"] }]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "hasSkill" },
+            "skillId": { "$ref": "#/$defs/id" }
+          },
+          "required": ["type", "skillId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "attributeAtLeast" },
+            "attributeId": { "$ref": "#/$defs/id" },
+            "value": { "type": "number" }
+          },
+          "required": ["type", "attributeId", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "attributeCompare" },
+            "attributeId": { "$ref": "#/$defs/id" },
+            "operator": { "$ref": "#/$defs/comparisonOperator" },
+            "value": { "type": "number" }
+          },
+          "required": ["type", "attributeId", "operator", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "hasClass" },
+            "classIds": { "$ref": "#/$defs/idArray" }
+          },
+          "required": ["type", "classIds"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "hasRace" },
+            "raceIds": { "$ref": "#/$defs/idArray" }
+          },
+          "required": ["type", "raceIds"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "goldAtLeast" },
+            "value": { "type": "number", "minimum": 0 }
+          },
+          "required": ["type", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "resourceAtLeast" },
+            "resourceId": { "$ref": "#/$defs/id" },
+            "value": { "type": "number" },
+            "asRatio": { "type": "boolean" }
+          },
+          "required": ["type", "resourceId", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "flagEquals" },
+            "flag": { "$ref": "#/$defs/id" },
+            "value": { "$ref": "#/$defs/jsonPrimitive" }
+          },
+          "required": ["type", "flag", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "flagCompare" },
+            "flag": { "$ref": "#/$defs/id" },
+            "operator": { "$ref": "#/$defs/comparisonOperator" },
+            "value": { "type": "number" }
+          },
+          "required": ["type", "flag", "operator", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "questStatus" },
+            "questId": { "$ref": "#/$defs/id" },
+            "status": {
+              "oneOf": [
+                { "$ref": "#/$defs/questStatus" },
+                { "type": "array", "items": { "$ref": "#/$defs/questStatus" } }
+              ]
+            }
+          },
+          "required": ["type", "questId", "status"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "questStageAtLeast" },
+            "questId": { "$ref": "#/$defs/id" },
+            "stage": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["type", "questId", "stage"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "enemyDefeated" },
+            "enemyId": { "$ref": "#/$defs/id" },
+            "count": { "type": "integer", "minimum": 1 }
+          },
+          "required": ["type", "enemyId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "nodeVisited" },
+            "nodeId": { "$ref": "#/$defs/id" },
+            "times": { "type": "integer", "minimum": 1 }
+          },
+          "required": ["type", "nodeId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "choiceTaken" },
+            "nodeId": { "$ref": "#/$defs/id" },
+            "choiceId": { "$ref": "#/$defs/id" }
+          },
+          "required": ["type", "nodeId", "choiceId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "npcRelationAtLeast" },
+            "npcId": { "$ref": "#/$defs/id" },
+            "value": { "type": "number" }
+          },
+          "required": ["type", "npcId", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "levelAtLeast" },
+            "value": { "type": "integer", "minimum": 1 }
+          },
+          "required": ["type", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "endingReached" },
+            "endingId": { "$ref": "#/$defs/id" }
+          },
+          "required": ["type", "endingId"]
+        }
+      ]
+    },
+
+    "effect": {
+      "description": "Efeito declarativo aplicado pelo motor no backend, de forma transacional.",
+      "type": "object",
+      "required": ["type"],
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "addItem" },
+            "itemId": { "$ref": "#/$defs/id" },
+            "quantity": { "type": "integer", "minimum": 1 },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "itemId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "removeItem" },
+            "itemId": { "$ref": "#/$defs/id" },
+            "quantity": { "type": "integer", "minimum": 1 },
+            "required": { "type": "boolean" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "itemId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "consumeItem" },
+            "itemId": { "$ref": "#/$defs/id" },
+            "quantity": { "type": "integer", "minimum": 1 },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "itemId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "equipItem" },
+            "itemId": { "$ref": "#/$defs/id" },
+            "slot": { "type": "string" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "itemId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "unequipItem" },
+            "slot": { "type": "string" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "slot"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "grantGold" },
+            "amount": { "type": "integer", "minimum": 0 },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "amount"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "spendGold" },
+            "amount": { "type": "integer", "minimum": 0 },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "amount"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "heal" },
+            "amount": { "type": "number", "minimum": 0 },
+            "resourceId": { "$ref": "#/$defs/id" },
+            "full": { "type": "boolean" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "amount"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "damage" },
+            "amount": { "type": "number", "minimum": 0 },
+            "resourceId": { "$ref": "#/$defs/id" },
+            "ignoreArmor": { "type": "boolean" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "amount"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "restoreResource" },
+            "resourceId": { "$ref": "#/$defs/id" },
+            "amount": { "type": "number", "minimum": 0 },
+            "full": { "type": "boolean" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "resourceId", "amount"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "spendResource" },
+            "resourceId": { "$ref": "#/$defs/id" },
+            "amount": { "type": "number", "minimum": 0 },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "resourceId", "amount"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "modifyResourceMax" },
+            "resourceId": { "$ref": "#/$defs/id" },
+            "delta": { "type": "number" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "resourceId", "delta"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "modifyAttribute" },
+            "attributeId": { "$ref": "#/$defs/id" },
+            "delta": { "type": "number" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "attributeId", "delta"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "grantExperience" },
+            "amount": { "type": "integer", "minimum": 0 },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "amount"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "unlockSkill" },
+            "skillId": { "$ref": "#/$defs/id" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "skillId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "startCombat" },
+            "enemyIds": { "$ref": "#/$defs/idArray" },
+            "onVictoryNodeId": { "$ref": "#/$defs/id" },
+            "onDefeatNodeId": { "$ref": "#/$defs/id" },
+            "onFleeNodeId": { "$ref": "#/$defs/id" },
+            "fleeAllowed": { "type": "boolean" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "enemyIds"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "setQuestStatus" },
+            "questId": { "$ref": "#/$defs/id" },
+            "status": { "$ref": "#/$defs/questStatus" },
+            "stage": { "type": "integer", "minimum": 0 },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "questId", "status"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "advanceQuestStage" },
+            "questId": { "$ref": "#/$defs/id" },
+            "stage": { "type": "integer", "minimum": 0 },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "questId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "modifyNpcRelation" },
+            "npcId": { "$ref": "#/$defs/id" },
+            "delta": { "type": "number" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "npcId", "delta"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "setFlag" },
+            "flag": { "$ref": "#/$defs/id" },
+            "value": { "$ref": "#/$defs/jsonPrimitive" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "flag", "value"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "incrementFlag" },
+            "flag": { "$ref": "#/$defs/id" },
+            "delta": { "type": "number" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "flag", "delta"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "endAdventure" },
+            "endingId": { "$ref": "#/$defs/id" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "endingId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "goto" },
+            "nodeId": { "$ref": "#/$defs/id" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "nodeId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "setCheckpoint" },
+            "label": { "type": "string" },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "rollTable" },
+            "tableId": { "$ref": "#/$defs/id" },
+            "outcomes": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["weight"],
+                "additionalProperties": false,
+                "properties": {
+                  "weight": { "type": "number", "exclusiveMinimum": 0 },
+                  "label": { "type": "string" },
+                  "nodeId": { "$ref": "#/$defs/id" },
+                  "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } }
+                }
+              }
+            },
+            "id": { "$ref": "#/$defs/id" },
+            "mode": { "enum": ["once", "perVisit", "always"] },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["type", "outcomes"]
+        }
+      ]
+    },
+
+    "choiceTarget": {
+      "type": "object",
+      "required": ["kind"],
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "node" }, "nodeId": { "$ref": "#/$defs/id" } },
+          "required": ["kind", "nodeId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "ending" }, "endingId": { "$ref": "#/$defs/id" } },
+          "required": ["kind", "endingId"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "back" } },
+          "required": ["kind"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "stay" } },
+          "required": ["kind"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "random" },
+            "options": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["nodeId", "weight"],
+                "additionalProperties": false,
+                "properties": {
+                  "nodeId": { "$ref": "#/$defs/id" },
+                  "weight": { "type": "number", "exclusiveMinimum": 0 }
+                }
+              }
+            }
+          },
+          "required": ["kind", "options"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "conditional" },
+            "branches": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["when", "nodeId"],
+                "additionalProperties": false,
+                "properties": {
+                  "when": { "$ref": "#/$defs/condition" },
+                  "nodeId": { "$ref": "#/$defs/id" }
+                }
+              }
+            },
+            "otherwiseNodeId": { "$ref": "#/$defs/id" }
+          },
+          "required": ["kind", "branches"]
+        }
+      ]
+    },
+
+    "choice": {
+      "type": "object",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "conditions": { "$ref": "#/$defs/condition" },
+        "unavailableBehavior": { "enum": ["hide", "disable"] },
+        "unavailableLabel": { "type": "string" },
+        "cost": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "target": { "$ref": "#/$defs/choiceTarget" },
+        "once": { "type": "boolean" },
+        "order": { "type": "number" },
+        "icon": { "type": "string" },
+        "tags": { "$ref": "#/$defs/tags" }
+      }
+    },
+
+    "nodeMedia": {
+      "type": "object",
+      "required": ["assetId"],
+      "additionalProperties": false,
+      "properties": {
+        "assetId": { "$ref": "#/$defs/id" },
+        "caption": { "type": "string" },
+        "position": { "enum": ["inline", "background", "gallery"] }
+      }
+    },
+
+    "nodeAudio": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "musicAssetId": { "$ref": "#/$defs/id" },
+        "ambienceAssetId": { "$ref": "#/$defs/id" },
+        "sfxAssetId": { "$ref": "#/$defs/id" },
+        "loop": { "type": "boolean" },
+        "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "fadeMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "nodeVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "type": "object",
+          "required": ["x", "y"],
+          "additionalProperties": false,
+          "properties": { "x": { "type": "number" }, "y": { "type": "number" } }
+        },
+        "color": { "type": "string" },
+        "theme": { "type": "string" },
+        "icon": { "type": "string" },
+        "group": { "type": "string" },
+        "collapsed": { "type": "boolean" }
+      }
+    },
+
+    "node": {
+      "type": "object",
+      "required": ["id", "type"],
+      "allOf": [
+        {
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "type": {
+              "enum": [
+                "story",
+                "dialogue",
+                "combat",
+                "merchant",
+                "discovery",
+                "event",
+                "skillCheck",
+                "checkpoint",
+                "ending"
+              ]
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "story" },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type"]
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "dialogue" },
+                "npcId": { "$ref": "#/$defs/id" },
+                "lines": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "required": ["text"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": { "$ref": "#/$defs/id" },
+                      "speakerNpcId": { "$ref": "#/$defs/id" },
+                      "speakerName": { "type": "string" },
+                      "text": { "type": "string" },
+                      "portrait": { "$ref": "#/$defs/id" },
+                      "when": { "$ref": "#/$defs/condition" }
+                    }
+                  }
+                },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type", "lines"]
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "combat" },
+                "encounter": {
+                  "type": "object",
+                  "required": ["enemies", "onVictoryNodeId"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "enemies": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": ["enemyId"],
+                        "additionalProperties": false,
+                        "properties": {
+                          "enemyId": { "$ref": "#/$defs/id" },
+                          "count": { "type": "integer", "minimum": 1, "maximum": 12 }
+                        }
+                      }
+                    },
+                    "fleeAllowed": { "type": "boolean" },
+                    "onVictoryNodeId": { "$ref": "#/$defs/id" },
+                    "onDefeatNodeId": { "$ref": "#/$defs/id" },
+                    "onFleeNodeId": { "$ref": "#/$defs/id" },
+                    "onVictoryEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                    "onDefeatEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                    "surpriseRound": { "enum": ["player", "enemy", "none"] },
+                    "backgroundAssetId": { "$ref": "#/$defs/id" }
+                  }
+                },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type", "encounter"]
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "merchant" },
+                "npcId": { "$ref": "#/$defs/id" },
+                "stock": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["itemId"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "itemId": { "$ref": "#/$defs/id" },
+                      "price": { "type": "integer", "minimum": 0 },
+                      "quantity": { "type": "integer", "minimum": -1 },
+                      "when": { "$ref": "#/$defs/condition" }
+                    }
+                  }
+                },
+                "buysFromPlayer": { "type": "boolean" },
+                "buybackRate": { "type": "number", "minimum": 0, "maximum": 1 },
+                "leaveNodeId": { "$ref": "#/$defs/id" },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type", "stock"]
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "discovery" },
+                "rewards": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "continueNodeId": { "$ref": "#/$defs/id" },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type"]
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "event" },
+                "outcomes": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "required": ["weight"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "weight": { "type": "number", "exclusiveMinimum": 0 },
+                      "label": { "type": "string" },
+                      "text": { "type": "string" },
+                      "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                      "nodeId": { "$ref": "#/$defs/id" }
+                    }
+                  }
+                },
+                "continueNodeId": { "$ref": "#/$defs/id" },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type"]
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "skillCheck" },
+                "check": {
+                  "type": "object",
+                  "required": ["difficulty", "onSuccessNodeId", "onFailureNodeId"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "attributeId": { "$ref": "#/$defs/id" },
+                    "skillId": { "$ref": "#/$defs/id" },
+                    "dice": { "$ref": "#/$defs/dice" },
+                    "difficulty": { "type": "number" },
+                    "bonus": { "type": "number" },
+                    "itemBonuses": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["itemId", "bonus"],
+                        "additionalProperties": false,
+                        "properties": {
+                          "itemId": { "$ref": "#/$defs/id" },
+                          "bonus": { "type": "number" }
+                        }
+                      }
+                    },
+                    "onSuccessNodeId": { "$ref": "#/$defs/id" },
+                    "onFailureNodeId": { "$ref": "#/$defs/id" },
+                    "onCriticalSuccessNodeId": { "$ref": "#/$defs/id" },
+                    "onCriticalFailureNodeId": { "$ref": "#/$defs/id" },
+                    "onSuccessEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                    "onFailureEffects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                    "retryAllowed": { "type": "boolean" }
+                  }
+                },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type", "check"]
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "checkpoint" },
+                "label": { "type": "string" },
+                "continueNodeId": { "$ref": "#/$defs/id" },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type", "continueNodeId"]
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "ending" },
+                "endingId": { "$ref": "#/$defs/id" },
+                "id": { "$ref": "#/$defs/id" },
+                "title": { "type": "string" },
+                "text": { "type": "string" },
+                "image": { "$ref": "#/$defs/id" },
+                "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
+                "audio": { "$ref": "#/$defs/nodeAudio" },
+                "entryConditions": { "$ref": "#/$defs/condition" },
+                "fallbackNodeId": { "$ref": "#/$defs/id" },
+                "onEnter": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "onExit": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+                "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+                "checkpoint": { "type": "boolean" },
+                "visual": { "$ref": "#/$defs/nodeVisual" },
+                "tags": { "$ref": "#/$defs/tags" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["type", "endingId"]
+            }
+          ]
+        }
+      ]
+    },
+
+    "ending": {
+      "type": "object",
+      "required": ["id", "title"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string" },
+        "text": { "type": "string" },
+        "kind": { "enum": ["victory", "defeat", "neutral", "secret"] },
+        "image": { "$ref": "#/$defs/id" },
+        "effects": { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "achievementId": { "$ref": "#/$defs/id" }
+      }
+    }
+  }
+}

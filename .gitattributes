@@ -1,0 +1,30 @@
+# Normaliza o fim de linha no repositorio: LF sempre, em qualquer sistema.
+# Evita que um checkout no Windows produza diffs inteiros de "mudou tudo".
+* text=auto eol=lf
+
+*.md   text eol=lf
+*.json text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.yml  text eol=lf
+*.sql  text eol=lf
+
+# Binarios: nunca converter.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.ogg  binary
+*.mp3  binary
+*.mp4  binary
+*.woff  binary
+*.woff2 binary
+*.glb  binary
+*.gltf binary
+
+# package-lock.json e gerado: oculta no diff da revisao.
+package-lock.json linguist-generated=true -diff

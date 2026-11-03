@@ -1,0 +1,867 @@
+{
+  "schemaVersion": "1.0.0",
+  "metadata": {
+    "id": "a-ponte-quebrada",
+    "title": "A Ponte Quebrada",
+    "version": "1.0.0",
+    "summary": "Uma travessia impossível, um guardião silencioso e quatro caminhos possíveis.",
+    "description": "Aventura de demonstração do LoneTale. Mostra condições declarativas, efeitos transacionais, testes de habilidade, combate e finais múltiplos — tudo definido neste JSON, sem uma linha de código específica da história.",
+    "author": "TavernTale",
+    "language": "pt-BR",
+    "genre": ["fantasia", "exploração"],
+    "world": "Ruínas de Vharlen",
+    "tags": ["tutorial", "demonstração", "curta"],
+    "coverImage": "img-capa",
+    "estimatedMinutes": 20,
+    "difficulty": "normal",
+    "ageRating": "12+"
+  },
+
+  "ruleset": {
+    "id": "lonetale-basico-d20",
+    "name": "LoneTale Básico (d20)",
+    "description": "Conjunto simples de regras: quatro atributos, testes em 1d20 contra dificuldade e combate por rodadas.",
+    "allowedDice": ["1d3", "1d4", "1d6", "1d8", "1d20", "2d4", "2d6"],
+    "skillCheck": {
+      "mode": "diceVsDifficulty",
+      "defaultDice": "1d20",
+      "attributeModifier": { "divisor": 3, "offset": 10 },
+      "criticalSuccessOn": 20,
+      "criticalFailureOn": 1,
+      "skillBonus": 2
+    },
+    "combat": {
+      "enabled": true,
+      "initiative": "roll",
+      "initiativeDice": "1d20",
+      "fleeAllowed": true,
+      "fleeCheck": { "attributeId": "destreza", "dice": "1d20", "difficulty": 12 },
+      "armorMode": "subtract",
+      "minimumDamage": 1,
+      "attackRules": {
+        "mode": "rollToHit",
+        "hitDice": "1d20",
+        "attackAttributeId": "forca",
+        "damageAttributeId": "forca",
+        "playerDefenseBase": 10,
+        "defenseAttributeId": "destreza",
+        "unarmedDamageDice": "1d3"
+      },
+      "maxRounds": 30
+    },
+    "progression": {
+      "enabled": true,
+      "xpThresholds": [100, 250, 500, 900],
+      "maxLevel": 5,
+      "onLevelUp": {
+        "attributePoints": 1,
+        "resourceGains": [{ "resourceId": "pontos-de-vida", "maxDelta": 4, "restore": false }]
+      }
+    },
+    "death": {
+      "onVitalDepleted": "restartCheckpoint",
+      "vitalResourceId": "pontos-de-vida",
+      "endingId": "final-derrota"
+    },
+    "economy": {
+      "currencyName": "moedas de ouro",
+      "currencyAbbreviation": "mo",
+      "merchantBuybackRate": 0.4
+    },
+    "inventory": {
+      "maxSlots": 20,
+      "equipmentSlots": ["maoPrincipal", "maoSecundaria", "corpo", "acessorio"]
+    }
+  },
+
+  "characterCreation": {
+    "startNodeId": "clareira-inicial",
+    "intro": "Antes de partir, diga ao mundo quem você é.",
+    "name": {
+      "required": true,
+      "minLength": 2,
+      "maxLength": 32,
+      "suggestions": ["Ysolde", "Karvan", "Nimue", "Dorec"]
+    },
+    "allowedClassIds": ["guerreiro", "mago", "explorador"],
+    "allowedRaceIds": ["humano", "elfo"],
+    "attributes": {
+      "method": "pointBuy",
+      "points": 12,
+      "minPerAttribute": 8,
+      "maxPerAttribute": 16
+    },
+    "startingGold": 40,
+    "startingItems": [{ "itemId": "tocha", "quantity": 1 }],
+    "appearanceFields": [
+      {
+        "id": "cor-da-pele",
+        "label": "Cor da pele",
+        "kind": "select",
+        "required": true,
+        "options": [
+          { "id": "clara", "label": "Clara", "color": "#f0d2b8" },
+          { "id": "morena", "label": "Morena", "color": "#c08a5c" },
+          { "id": "escura", "label": "Escura", "color": "#6b4328" },
+          { "id": "acinzentada", "label": "Acinzentada", "color": "#9aa3a8" }
+        ]
+      },
+      {
+        "id": "cor-dos-cabelos",
+        "label": "Cor dos cabelos",
+        "kind": "select",
+        "options": [
+          { "id": "negros", "label": "Negros", "color": "#1c1b1a" },
+          { "id": "castanhos", "label": "Castanhos", "color": "#5a3b22" },
+          { "id": "ruivos", "label": "Ruivos", "color": "#8c3a16" },
+          { "id": "prateados", "label": "Prateados", "color": "#c9ccd1" }
+        ]
+      },
+      {
+        "id": "estilo-dos-cabelos",
+        "label": "Estilo dos cabelos",
+        "kind": "select",
+        "options": [
+          { "id": "curtos", "label": "Curtos" },
+          { "id": "longos", "label": "Longos" },
+          { "id": "trancados", "label": "Trançados" },
+          { "id": "raspados", "label": "Raspados" }
+        ]
+      },
+      {
+        "id": "altura",
+        "label": "Altura",
+        "kind": "number",
+        "min": 140,
+        "max": 210,
+        "step": 1,
+        "unit": "cm",
+        "default": 172
+      },
+      {
+        "id": "porte",
+        "label": "Porte físico",
+        "kind": "select",
+        "options": [
+          { "id": "esguio", "label": "Esguio" },
+          { "id": "atletico", "label": "Atlético" },
+          { "id": "robusto", "label": "Robusto" }
+        ]
+      },
+      {
+        "id": "marca-especial",
+        "label": "Característica marcante",
+        "kind": "text",
+        "maxLength": 80
+      }
+    ],
+    "allowDescription": true,
+    "descriptionMaxLength": 400
+  },
+
+  "attributes": [
+    {
+      "id": "forca",
+      "name": "Força",
+      "abbreviation": "FOR",
+      "description": "Peso que você carrega e dano que você entrega.",
+      "min": 1,
+      "max": 20,
+      "default": 8
+    },
+    {
+      "id": "destreza",
+      "name": "Destreza",
+      "abbreviation": "DES",
+      "description": "Equilíbrio, reflexos e precisão.",
+      "min": 1,
+      "max": 20,
+      "default": 8
+    },
+    {
+      "id": "inteligencia",
+      "name": "Inteligência",
+      "abbreviation": "INT",
+      "description": "Conhecimento arcano e leitura do mundo.",
+      "min": 1,
+      "max": 20,
+      "default": 8
+    },
+    {
+      "id": "constituicao",
+      "name": "Constituição",
+      "abbreviation": "CON",
+      "description": "Vigor e resistência a ferimentos.",
+      "min": 1,
+      "max": 20,
+      "default": 8
+    }
+  ],
+
+  "resources": [
+    {
+      "id": "pontos-de-vida",
+      "name": "Pontos de Vida",
+      "abbreviation": "PV",
+      "base": 10,
+      "derivedFrom": { "attributeId": "constituicao", "multiplier": 1 },
+      "perLevel": 4,
+      "vital": true,
+      "color": "#c0392b"
+    },
+    {
+      "id": "mana",
+      "name": "Mana",
+      "abbreviation": "MP",
+      "base": 0,
+      "derivedFrom": { "attributeId": "inteligencia", "multiplier": 2 },
+      "perLevel": 2,
+      "regenPerNode": 1,
+      "color": "#2d7dd2"
+    }
+  ],
+
+  "classes": [
+    {
+      "id": "guerreiro",
+      "name": "Guerreiro",
+      "description": "Resolve problemas de perto. Confia no aço antes da conversa.",
+      "modifiers": {
+        "attributes": { "forca": 2 },
+        "resources": { "pontos-de-vida": 6, "mana": -12 }
+      },
+      "startingSkillIds": ["golpe-poderoso"],
+      "startingItems": [
+        { "itemId": "espada-curta", "quantity": 1, "equip": true, "slot": "maoPrincipal" },
+        { "itemId": "armadura-de-couro", "quantity": 1, "equip": true, "slot": "corpo" }
+      ],
+      "tags": ["combate"]
+    },
+    {
+      "id": "mago",
+      "name": "Mago",
+      "description": "Conhece as palavras que dobram o peso do mundo.",
+      "modifiers": {
+        "attributes": { "inteligencia": 2 },
+        "resources": { "pontos-de-vida": -2, "mana": 8 }
+      },
+      "startingSkillIds": ["levitacao"],
+      "startingItems": [
+        { "itemId": "cajado-de-carvalho", "quantity": 1, "equip": true, "slot": "maoPrincipal" },
+        { "itemId": "pocao-de-cura", "quantity": 2 }
+      ],
+      "tags": ["arcano"]
+    },
+    {
+      "id": "explorador",
+      "name": "Explorador",
+      "description": "Já atravessou piores. Sempre com corda no cinto.",
+      "modifiers": {
+        "attributes": { "destreza": 2 },
+        "resources": { "pontos-de-vida": 2, "mana": -6 }
+      },
+      "startingSkillIds": ["escalada"],
+      "startingItems": [
+        { "itemId": "espada-curta", "quantity": 1, "equip": true, "slot": "maoPrincipal" },
+        { "itemId": "corda", "quantity": 1 }
+      ],
+      "tags": ["exploração"]
+    }
+  ],
+
+  "races": [
+    {
+      "id": "humano",
+      "name": "Humano",
+      "description": "Adaptável, teimoso, surpreendentemente durável.",
+      "modifiers": { "attributes": { "constituicao": 1 } }
+    },
+    {
+      "id": "elfo",
+      "name": "Elfo",
+      "description": "Leve como quem nunca precisou correr com pressa.",
+      "modifiers": {
+        "attributes": { "destreza": 1, "inteligencia": 1, "constituicao": -1 }
+      },
+      "appearanceRestrictions": { "porte": ["esguio", "atletico"] }
+    }
+  ],
+
+  "skills": [
+    {
+      "id": "levitacao",
+      "name": "Levitação",
+      "description": "Suspende o próprio corpo por alguns instantes. Custa mana.",
+      "kind": "active",
+      "cost": { "resourceId": "mana", "amount": 5 },
+      "tags": ["arcano", "movimento"]
+    },
+    {
+      "id": "escalada",
+      "name": "Escalada",
+      "description": "Treinamento com cordas, nós e paredes ingratas.",
+      "kind": "proficiency",
+      "tags": ["exploração"]
+    },
+    {
+      "id": "golpe-poderoso",
+      "name": "Golpe Poderoso",
+      "description": "Um ataque devastador que exige tempo para repetir.",
+      "kind": "active",
+      "combat": {
+        "damageDice": "2d6",
+        "scalingAttributeId": "forca",
+        "targets": "single",
+        "cooldownRounds": 2
+      },
+      "tags": ["combate"]
+    }
+  ],
+
+  "items": [
+    {
+      "id": "corda",
+      "name": "Corda de cânhamo",
+      "description": "Dez metros de corda resistente. Serve para quase tudo.",
+      "kind": "misc",
+      "stackable": true,
+      "maxStack": 3,
+      "value": 20,
+      "weight": 2,
+      "icon": "img-corda",
+      "tags": ["ferramenta"]
+    },
+    {
+      "id": "tocha",
+      "name": "Tocha",
+      "description": "Luz suficiente para não tropeçar no escuro.",
+      "kind": "misc",
+      "stackable": true,
+      "maxStack": 5,
+      "value": 5,
+      "weight": 1
+    },
+    {
+      "id": "espada-curta",
+      "name": "Espada curta",
+      "kind": "weapon",
+      "slot": "maoPrincipal",
+      "value": 50,
+      "weight": 3,
+      "stats": { "damageDice": "1d6" }
+    },
+    {
+      "id": "cajado-de-carvalho",
+      "name": "Cajado de carvalho",
+      "kind": "weapon",
+      "slot": "maoPrincipal",
+      "value": 40,
+      "weight": 3,
+      "stats": { "damageDice": "1d4", "resourceMaxModifiers": { "mana": 4 } }
+    },
+    {
+      "id": "armadura-de-couro",
+      "name": "Armadura de couro",
+      "kind": "armor",
+      "slot": "corpo",
+      "value": 60,
+      "weight": 6,
+      "stats": { "armor": 2 }
+    },
+    {
+      "id": "pocao-de-cura",
+      "name": "Poção de cura",
+      "description": "Recupera 10 pontos de vida.",
+      "kind": "consumable",
+      "stackable": true,
+      "maxStack": 5,
+      "value": 25,
+      "weight": 1,
+      "consumedOnUse": true,
+      "useEffects": [{ "type": "heal", "amount": 10, "resourceId": "pontos-de-vida" }]
+    },
+    {
+      "id": "nucleo-do-guardiao",
+      "name": "Núcleo do Guardião",
+      "description": "Uma pedra morna que pulsa devagar, como se ainda lembrasse de vigiar.",
+      "kind": "quest",
+      "bound": true,
+      "value": 0
+    }
+  ],
+
+  "enemies": [
+    {
+      "id": "guardiao-de-pedra",
+      "name": "Guardião de Pedra",
+      "description": "Três metros de granito articulado. Não respira, não pisca, não negocia.",
+      "attributes": { "forca": 16, "destreza": 6, "constituicao": 18 },
+      "hp": 28,
+      "armor": 3,
+      "attack": { "dice": "1d6", "flatDamage": 1, "hitBonus": 2 },
+      "defense": 13,
+      "initiative": 2,
+      "abilities": [
+        {
+          "id": "impacto-sismico",
+          "name": "Impacto Sísmico",
+          "description": "Esmaga o chão e lança lascas de pedra.",
+          "chance": 0.3,
+          "damageDice": "2d4",
+          "cooldownRounds": 2
+        }
+      ],
+      "loot": [{ "itemId": "nucleo-do-guardiao", "quantity": 1, "chance": 1 }],
+      "experience": 120,
+      "gold": { "min": 10, "max": 30 },
+      "image": "img-guardiao",
+      "unique": true
+    }
+  ],
+
+  "npcs": [
+    {
+      "id": "guardiao",
+      "name": "O Guardião",
+      "description": "Observa em silêncio desde antes de a ponte cair.",
+      "role": "sentinela",
+      "initialRelation": 0,
+      "relationLabels": [
+        { "atLeast": 3, "label": "Tolerado" },
+        { "atLeast": 0, "label": "Observado" }
+      ]
+    },
+    {
+      "id": "mercador-ambulante",
+      "name": "Oswin, o Ambulante",
+      "description": "Carrega nas costas mais do que parece caber.",
+      "role": "comerciante",
+      "initialRelation": 1
+    }
+  ],
+
+  "quests": [
+    {
+      "id": "travessia",
+      "name": "Atravessar o desfiladeiro",
+      "description": "Encontre um jeito de passar para o outro lado do abismo.",
+      "initialStatus": "locked",
+      "stages": [
+        { "stage": 0, "title": "Chegar ao desfiladeiro" },
+        { "stage": 1, "title": "Encontrar uma travessia" },
+        { "stage": 2, "title": "Alcançar o outro lado" }
+      ],
+      "rewards": [
+        {
+          "id": "recompensa.travessia",
+          "mode": "once",
+          "type": "grantExperience",
+          "amount": 50
+        }
+      ]
+    }
+  ],
+
+  "variables": [
+    {
+      "id": "guardiao-pacificado",
+      "label": "Guardião silenciado",
+      "type": "boolean",
+      "initial": false,
+      "visible": false
+    },
+    {
+      "id": "vezes-na-ponte",
+      "label": "Vezes que você encarou a ponte",
+      "type": "number",
+      "initial": 0,
+      "visible": true
+    }
+  ],
+
+  "assets": [
+    { "id": "img-capa", "kind": "image", "src": "/media/a-ponte-quebrada/capa.webp", "alt": "Uma ponte de pedra partida sobre um abismo enevoado" },
+    { "id": "img-floresta", "kind": "image", "src": "/media/a-ponte-quebrada/floresta.webp", "alt": "Floresta antiga de troncos altos" },
+    { "id": "img-ponte", "kind": "image", "src": "/media/a-ponte-quebrada/ponte.webp", "alt": "Ponte de pedra desmoronada" },
+    { "id": "img-guardiao", "kind": "image", "src": "/media/a-ponte-quebrada/guardiao.webp", "alt": "Guardião de pedra imóvel" },
+    { "id": "img-corda", "kind": "image", "src": "/media/a-ponte-quebrada/corda.webp", "alt": "Corda de cânhamo enrolada" },
+    { "id": "img-outro-lado", "kind": "image", "src": "/media/a-ponte-quebrada/outro-lado.webp", "alt": "Ruínas vistas do outro lado do abismo" },
+    { "id": "som-tensao", "kind": "audio", "src": "/media/a-ponte-quebrada/tensao.ogg", "durationMs": 95000 },
+    { "id": "som-floresta", "kind": "audio", "src": "/media/a-ponte-quebrada/floresta.ogg", "durationMs": 120000 }
+  ],
+
+  "nodes": [
+    {
+      "id": "clareira-inicial",
+      "type": "story",
+      "title": "A clareira",
+      "text": "A chuva parou há pouco e a terra ainda cede sob suas botas. Ao norte, a floresta antiga se fecha sobre a trilha. Em algum lugar além dela, dizem, há ruínas que ninguém visita há cem anos.",
+      "image": "img-floresta",
+      "audio": { "ambienceAssetId": "som-floresta", "loop": true, "volume": 0.4 },
+      "checkpoint": true,
+      "visual": { "position": { "x": 0, "y": 0 }, "color": "#3b7a57" },
+      "choices": [
+        {
+          "id": "seguir-trilha",
+          "label": "Seguir a trilha para o norte",
+          "order": 1,
+          "target": { "kind": "node", "nodeId": "floresta-antiga" }
+        }
+      ]
+    },
+
+    {
+      "id": "floresta-antiga",
+      "type": "story",
+      "title": "Floresta antiga",
+      "text": "Os troncos são largos demais para serem abraçados e a luz chega filtrada, esverdeada. Há um cheiro de musgo molhado e, mais adiante, o som oco de vento passando por um vão muito grande.",
+      "image": "img-floresta",
+      "visual": { "position": { "x": 260, "y": 0 } },
+      "choices": [
+        {
+          "id": "revirar-matagal",
+          "label": "Revirar o matagal à procura de suprimentos",
+          "description": "Algo brilha entre as raízes.",
+          "order": 1,
+          "once": true,
+          "target": { "kind": "node", "nodeId": "descoberta-corda" }
+        },
+        {
+          "id": "procurar-mercador",
+          "label": "Chamar pelo mascate que acampa por aqui",
+          "order": 2,
+          "target": { "kind": "node", "nodeId": "mercador-ambulante" }
+        },
+        {
+          "id": "ir-ao-desfiladeiro",
+          "label": "Seguir o som do vento",
+          "order": 3,
+          "target": { "kind": "node", "nodeId": "ponto-de-retomada" }
+        }
+      ]
+    },
+
+    {
+      "id": "descoberta-corda",
+      "type": "discovery",
+      "title": "Entre as raízes",
+      "text": "Enrolada no tronco caído, meio enterrada, uma corda de cânhamo em bom estado. Quem a deixou ali não voltou para buscá-la.",
+      "image": "img-corda",
+      "visual": { "position": { "x": 260, "y": -180 } },
+      "rewards": [
+        {
+          "id": "recompensa.corda-da-floresta",
+          "mode": "once",
+          "type": "addItem",
+          "itemId": "corda",
+          "quantity": 1
+        },
+        {
+          "id": "recompensa.xp-corda",
+          "mode": "once",
+          "type": "grantExperience",
+          "amount": 15
+        }
+      ],
+      "continueNodeId": "floresta-antiga"
+    },
+
+    {
+      "id": "mercador-ambulante",
+      "type": "merchant",
+      "title": "O acampamento de Oswin",
+      "text": "— Corda? Tenho. Poção? Tenho duas, três. Conselho é de graça: não confie em ponte velha.",
+      "npcId": "mercador-ambulante",
+      "visual": { "position": { "x": 260, "y": 180 } },
+      "stock": [
+        { "itemId": "corda", "price": 25 },
+        { "itemId": "pocao-de-cura", "price": 30, "quantity": 3 },
+        { "itemId": "armadura-de-couro", "price": 70, "quantity": 1 },
+        { "itemId": "tocha", "price": 6 }
+      ],
+      "buysFromPlayer": true,
+      "buybackRate": 0.4,
+      "leaveNodeId": "floresta-antiga"
+    },
+
+    {
+      "id": "ponto-de-retomada",
+      "type": "checkpoint",
+      "label": "Entrada do desfiladeiro",
+      "title": "A beira do mundo",
+      "text": "A floresta se abre de repente e o chão simplesmente termina.",
+      "visual": { "position": { "x": 520, "y": 0 }, "color": "#8e8e8e" },
+      "continueNodeId": "ponte-de-pedra"
+    },
+
+    {
+      "id": "ponte-de-pedra",
+      "type": "story",
+      "title": "A ponte quebrada",
+      "text": "À sua frente, uma antiga ponte de pedra atravessa um abismo. Parte da construção desmoronou. Um guardião observa silenciosamente sua aproximação.",
+      "image": "img-ponte",
+      "audio": { "musicAssetId": "som-tensao", "loop": true, "volume": 0.5, "fadeMs": 1200 },
+      "visual": { "position": { "x": 780, "y": 0 }, "color": "#b06f3c", "icon": "bridge" },
+      "onEnter": [
+        { "type": "incrementFlag", "flag": "vezes-na-ponte", "delta": 1 },
+        {
+          "id": "quest.travessia.iniciar",
+          "mode": "once",
+          "type": "setQuestStatus",
+          "questId": "travessia",
+          "status": "active",
+          "stage": 1
+        }
+      ],
+      "choices": [
+        {
+          "id": "usar-corda",
+          "label": "Usar a corda para atravessar o vão",
+          "description": "Amarrar uma ponta no pilar e confiar nos braços.",
+          "order": 1,
+          "conditions": { "type": "hasItem", "itemId": "corda" },
+          "unavailableBehavior": "disable",
+          "unavailableLabel": "Você precisaria de uma corda.",
+          "target": { "kind": "node", "nodeId": "travessia-com-corda" }
+        },
+        {
+          "id": "usar-levitacao",
+          "label": "Conjurar levitação e flutuar sobre o abismo",
+          "order": 2,
+          "conditions": {
+            "type": "all",
+            "conditions": [
+              { "type": "hasSkill", "skillId": "levitacao" },
+              { "type": "resourceAtLeast", "resourceId": "mana", "value": 5 }
+            ]
+          },
+          "unavailableBehavior": "disable",
+          "cost": [{ "type": "spendResource", "resourceId": "mana", "amount": 5 }],
+          "target": { "kind": "node", "nodeId": "travessia-levitando" }
+        },
+        {
+          "id": "enfrentar-guardiao",
+          "label": "Enfrentar o guardião",
+          "description": "Se ele cair, a passagem é sua.",
+          "order": 3,
+          "conditions": {
+            "type": "not",
+            "condition": { "type": "flagEquals", "flag": "guardiao-pacificado", "value": true }
+          },
+          "unavailableBehavior": "hide",
+          "target": { "kind": "node", "nodeId": "combate-com-guardiao" }
+        },
+        {
+          "id": "voltar-a-floresta",
+          "label": "Retornar à floresta",
+          "order": 4,
+          "target": { "kind": "node", "nodeId": "floresta-antiga" }
+        }
+      ]
+    },
+
+    {
+      "id": "travessia-com-corda",
+      "type": "skillCheck",
+      "title": "Mão sobre mão",
+      "text": "Você amarra a corda no pilar que ainda parece inteiro, testa o nó duas vezes e se lança sobre o vazio.",
+      "image": "img-ponte",
+      "entryConditions": { "type": "hasItem", "itemId": "corda" },
+      "fallbackNodeId": "ponte-de-pedra",
+      "visual": { "position": { "x": 1040, "y": -200 } },
+      "check": {
+        "attributeId": "destreza",
+        "skillId": "escalada",
+        "dice": "1d20",
+        "difficulty": 12,
+        "itemBonuses": [{ "itemId": "corda", "bonus": 3 }],
+        "onSuccessNodeId": "outro-lado",
+        "onFailureNodeId": "queda-no-abismo",
+        "onCriticalFailureNodeId": "queda-no-abismo",
+        "onSuccessEffects": [
+          {
+            "id": "xp.travessia-corda",
+            "mode": "once",
+            "type": "grantExperience",
+            "amount": 40
+          }
+        ],
+        "retryAllowed": false
+      }
+    },
+
+    {
+      "id": "travessia-levitando",
+      "type": "story",
+      "title": "Peso emprestado",
+      "text": "As palavras saem em voz baixa e o chão deixa de insistir em você. Por três respirações longas, o abismo é apenas paisagem.",
+      "entryConditions": { "type": "hasSkill", "skillId": "levitacao" },
+      "fallbackNodeId": "ponte-de-pedra",
+      "visual": { "position": { "x": 1040, "y": 0 } },
+      "onEnter": [
+        {
+          "id": "xp.travessia-levitacao",
+          "mode": "once",
+          "type": "grantExperience",
+          "amount": 40
+        }
+      ],
+      "choices": [
+        {
+          "id": "pousar-do-outro-lado",
+          "label": "Pousar do outro lado",
+          "target": { "kind": "node", "nodeId": "outro-lado" }
+        }
+      ]
+    },
+
+    {
+      "id": "combate-com-guardiao",
+      "type": "combat",
+      "title": "O guardião se move",
+      "text": "O granito range. Ele não avança: espera que você chegue perto o bastante para ser um problema.",
+      "image": "img-guardiao",
+      "visual": { "position": { "x": 1040, "y": 220 }, "color": "#7b241c" },
+      "encounter": {
+        "enemies": [{ "enemyId": "guardiao-de-pedra", "count": 1 }],
+        "fleeAllowed": true,
+        "onVictoryNodeId": "guardiao-derrotado",
+        "onFleeNodeId": "ponte-de-pedra",
+        "surpriseRound": "none",
+        "backgroundAssetId": "img-ponte"
+      }
+    },
+
+    {
+      "id": "guardiao-derrotado",
+      "type": "discovery",
+      "title": "Silêncio de pedra",
+      "text": "O guardião se parte em três e para. No peito aberto, uma pedra morna continua pulsando devagar.",
+      "image": "img-guardiao",
+      "visual": { "position": { "x": 1300, "y": 220 } },
+      "rewards": [
+        {
+          "id": "flag.guardiao-pacificado",
+          "mode": "once",
+          "type": "setFlag",
+          "flag": "guardiao-pacificado",
+          "value": true
+        },
+        {
+          "id": "npc.guardiao-relacao",
+          "mode": "once",
+          "type": "modifyNpcRelation",
+          "npcId": "guardiao",
+          "delta": -2
+        }
+      ],
+      "continueNodeId": "outro-lado"
+    },
+
+    {
+      "id": "queda-no-abismo",
+      "type": "story",
+      "title": "Queda",
+      "text": "O nó cede, ou a pedra cede, ou você cede. A diferença deixa de importar na metade do caminho.",
+      "visual": { "position": { "x": 1300, "y": -200 }, "color": "#4a4a4a" },
+      "onEnter": [
+        { "type": "damage", "amount": 999, "resourceId": "pontos-de-vida", "ignoreArmor": true }
+      ],
+      "choices": [
+        {
+          "id": "arrastar-se",
+          "label": "Arrastar-se de volta",
+          "target": { "kind": "node", "nodeId": "ponto-de-retomada" }
+        }
+      ]
+    },
+
+    {
+      "id": "outro-lado",
+      "type": "story",
+      "title": "O outro lado",
+      "text": "Você se levanta no lado de lá, com as mãos ardendo e a ponte às suas costas. À frente, entre a neblina, as primeiras pedras das ruínas de Vharlen.",
+      "image": "img-outro-lado",
+      "checkpoint": true,
+      "visual": { "position": { "x": 1560, "y": 0 }, "color": "#3b7a57" },
+      "onEnter": [
+        {
+          "id": "quest.travessia.concluir",
+          "mode": "once",
+          "type": "setQuestStatus",
+          "questId": "travessia",
+          "status": "completed",
+          "stage": 2
+        }
+      ],
+      "choices": [
+        {
+          "id": "entrar-nas-ruinas",
+          "label": "Entrar nas ruínas",
+          "order": 1,
+          "target": { "kind": "node", "nodeId": "final-vitoria" }
+        },
+        {
+          "id": "estudar-o-nucleo",
+          "label": "Estudar o núcleo do guardião antes de entrar",
+          "description": "A pedra responde quando você a segura contra a luz.",
+          "order": 2,
+          "conditions": {
+            "type": "all",
+            "conditions": [
+              { "type": "hasItem", "itemId": "nucleo-do-guardiao" },
+              { "type": "attributeAtLeast", "attributeId": "inteligencia", "value": 12 }
+            ]
+          },
+          "unavailableBehavior": "hide",
+          "target": { "kind": "node", "nodeId": "final-segredo" }
+        }
+      ]
+    },
+
+    {
+      "id": "final-vitoria",
+      "type": "ending",
+      "endingId": "final-vitoria",
+      "title": "As ruínas de Vharlen",
+      "visual": { "position": { "x": 1820, "y": -120 }, "color": "#1e8449" }
+    },
+
+    {
+      "id": "final-segredo",
+      "type": "ending",
+      "endingId": "final-segredo",
+      "title": "O que a pedra lembrava",
+      "visual": { "position": { "x": 1820, "y": 120 }, "color": "#7d3c98" }
+    }
+  ],
+
+  "endings": [
+    {
+      "id": "final-vitoria",
+      "title": "A travessia",
+      "text": "Você atravessou. É pouco, para quem conta histórias de longe — mas foi você quem estava lá, com o abismo embaixo.",
+      "kind": "victory",
+      "image": "img-outro-lado",
+      "effects": [
+        { "id": "final.vitoria.xp", "mode": "once", "type": "grantExperience", "amount": 60 }
+      ]
+    },
+    {
+      "id": "final-segredo",
+      "title": "O guardião e o seu nome",
+      "text": "O núcleo mostra, em pulsos lentos, a ponte inteira — e alguém atravessando com o seu rosto, há cem anos.",
+      "kind": "secret",
+      "image": "img-guardiao",
+      "effects": [
+        { "id": "final.segredo.xp", "mode": "once", "type": "grantExperience", "amount": 120 }
+      ]
+    },
+    {
+      "id": "final-derrota",
+      "title": "O abismo",
+      "text": "A neblina fecha sobre o vão como se nada tivesse passado por ali. E, de certo modo, nada passou.",
+      "kind": "defeat"
+    }
+  ]
+}

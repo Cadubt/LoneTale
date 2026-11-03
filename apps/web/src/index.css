@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --surface: 15 13 9;
+    --surface-raised: 26 23 17;
+    --border-soft: 69 58 41;
+    color-scheme: dark;
+  }
+
+  :root[data-theme='light'] {
+    --surface: 246 243 236;
+    --surface-raised: 255 255 255;
+    --border-soft: 210 198 174;
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: rgb(var(--surface));
+    background-image:
+      radial-gradient(1200px 600px at 50% -10%, rgba(210, 114, 31, 0.08), transparent 60%),
+      radial-gradient(800px 400px at 100% 100%, rgba(74, 111, 208, 0.06), transparent 60%);
+    color: theme('colors.ink.100');
+    font-family: theme('fontFamily.body');
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :root[data-theme='light'] body {
+    color: theme('colors.ink.900');
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: theme('fontFamily.display');
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+  }
+
+  /* Foco sempre visível: a navegação por teclado é parte da acessibilidade,
+     não um detalhe. */
+  :focus-visible {
+    outline: 2px solid theme('colors.ember.400');
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  button {
+    font-family: theme('fontFamily.ui');
+  }
+
+  ::selection {
+    background: rgba(210, 114, 31, 0.35);
+  }
+}
+
+@layer components {
+  .lt-panel {
+    @apply rounded-xl border bg-ink-900/70 shadow-panel backdrop-blur-sm;
+    border-color: rgb(var(--border-soft) / 0.6);
+  }
+
+  :root[data-theme='light'] .lt-panel {
+    @apply bg-white/80;
+  }
+
+  .lt-prose {
+    @apply text-[1.0625rem] leading-relaxed text-ink-100/90;
+  }
+
+  :root[data-theme='light'] .lt-prose {
+    @apply text-ink-800;
+  }
+
+  /* Texto narrativo: parágrafos espaçados, primeira letra destacada. */
+  .lt-narrative p {
+    @apply mb-4;
+  }
+
+  .lt-narrative > p:first-of-type::first-letter {
+    @apply float-left mr-2 mt-1 font-display text-4xl leading-none text-ember-400;
+  }
+
+  .lt-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.ink.700') transparent;
+  }
+
+  .lt-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .lt-scrollbar::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-ink-700;
+  }
+}
+
+/* React Flow: tema escuro para o editor de aventuras. */
+.react-flow__attribution {
+  display: none;
+}

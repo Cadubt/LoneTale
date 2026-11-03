@@ -1,0 +1,39 @@
+{
+  "name": "@lonetale/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Adventure Engine: contrato JSON, validacao, condicoes, efeitos, dados e resolucao de nos. Sem dependencia de framework.",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "schema"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schema/adventure.schema.json": "./dist/schema/adventure.schema.json"
+  },
+  "bin": {
+    "lonetale-validate-adventure": "./dist/cli/validate-adventure.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node ./scripts/copy-schema.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate": "node ./dist/cli/validate-adventure.js"
+  },
+  "dependencies": {
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.12",
+    "typescript": "5.4.5",
+    "vitest": "1.6.0"
+  }
+}
