@@ -1,0 +1,19 @@
+{
+  "name": "@lonetale/preview-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Servidor de pre-visualizacao: responde o contrato da API usando o motor real, em memoria, sem SQL Server. Ferramenta de desenvolvimento - nao e a API.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "node -r ts-node/register src/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@lonetale/engine": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.12",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.5"
+  }
+}

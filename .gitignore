@@ -28,3 +28,6 @@ coverage/
 
 # local uploads
 uploads/
+
+# partidas do servidor de pre-visualizacao
+tools/preview-server/.data/

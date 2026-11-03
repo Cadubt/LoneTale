@@ -109,6 +109,48 @@ Swagger/OpenAPI · JWT com rotação de sessão · Google OpenID Connect
 npm install
 ```
 
+### Atalho: jogar sem banco de dados
+
+Antes de configurar o SQL Server, dá para jogar a aventura inteira. O
+**servidor de pré-visualização** responde ao mesmo contrato HTTP da API usando o
+**motor real**, com tudo em memória:
+
+```bash
+npm run dev:preview
+```
+
+```bash
+npm run dev:web
+```
+
+Abra `http://localhost:5173`, entre com qualquer e-mail e senha, e jogue.
+
+O que é real: condições, efeitos, rolagens, combate, checkpoints, progressão e
+finais — tudo vem de `@lonetale/engine`, o mesmo código que a API usa. **O que é
+fingido:** autenticação (um usuário fixo, qualquer senha entra), catálogo (uma
+aventura, lida do disco) e persistência (um JSON em
+`tools/preview-server/.data/`, fora do controle de versão).
+
+As cenas aparecem com **imagens de exemplo** geradas na hora, já que a arte
+ainda não existe — elas trazem a marca "IMAGEM DE EXEMPLO" para não serem
+confundidas com arte final.
+
+As partidas sobrevivem ao reinício do servidor, então o fluxo de retomar uma
+partida interrompida pode ser testado aqui. Para apagar tudo:
+
+```bash
+curl -X POST http://localhost:3333/api/preview/reset
+```
+
+Para pré-visualizar outra aventura:
+
+```bash
+PREVIEW_ADVENTURE=adventures/minha-aventura/aventura.json npm run dev:preview
+```
+
+> Isto é uma ferramenta de desenvolvimento, não a API. Ela se recusa a iniciar
+> com `NODE_ENV=production`.
+
 ### 2. Configurar
 
 ```bash
@@ -162,6 +204,7 @@ npm run dev:web   # http://localhost:5173
 
 | Comando | O que faz |
 |---|---|
+| `npm run dev:preview` | Sobe o servidor de pré-visualização (sem banco) |
 | `npm test` | Testes do motor de aventuras |
 | `npm run typecheck` | Verificação de tipos em todos os pacotes |
 | `npm run build` | Compila motor, API e frontend |
@@ -252,6 +295,8 @@ apps/api/               API NestJS
   src/game/             Execução transacional das partidas
 
 apps/web/               Player + Studio (React)
+
+tools/preview-server/   Pré-visualização sem banco: contrato da API + motor real
 adventures/             Aventura demonstrativa "A Ponte das Sombras"
 docs/                   Planejamento técnico, arquitetura, banco, JSON, segurança
 ```

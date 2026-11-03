@@ -9,13 +9,15 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "tools/*"
   ],
   "scripts": {
     "build": "npm run build -w @lonetale/engine && npm run build -w @lonetale/api && npm run build -w @lonetale/web",
     "build:engine": "npm run build -w @lonetale/engine",
     "dev:api": "npm run start:dev -w @lonetale/api",
     "dev:web": "npm run dev -w @lonetale/web",
+    "dev:preview": "npm run build:engine && npm run start -w @lonetale/preview-server",
     "test": "npm run test -w @lonetale/engine",
     "test:engine": "npm run test -w @lonetale/engine",
     "typecheck": "npm run typecheck --workspaces --if-present",
