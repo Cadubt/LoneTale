@@ -7,12 +7,20 @@
    resto intocado.
 
    ONDE EXECUTAR
-     Conectado ao banco de dados da aplicação (ex.: CaduLabDB) — NÃO no master.
-     No portal do Azure: SQL Database > Editor de Consultas, ou por SSMS /
-     Azure Data Studio com o usuário administrador do servidor.
+     Conectado ao banco de dados da aplicação (ex.: CaduLabDB) — NÃO no master,
+     com o usuário administrador do servidor.
+
+   COMO EXECUTAR
+     Rode o arquivo INTEIRO de uma vez ("Execute script", não "Execute
+     statement"): há variáveis declaradas num ponto e usadas adiante.
+
+     Não há `GO` aqui de propósito. `GO` não é comando T-SQL, é separador de
+     lote que só o SSMS, o sqlcmd e o Azure Data Studio entendem — clientes
+     como DBeaver e DataGrip devolvem "Incorrect syntax near 'GO'". Sem ele,
+     o script roda em qualquer um dos dois mundos.
 
    ANTES DE EXECUTAR
-     1. Troque as duas senhas marcadas com <TROQUE...>. Gere senhas fortes:
+     1. Troque as duas senhas marcadas com <TROQUE...>. Para gerar:
           node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"
      2. Libere o seu IP no firewall do servidor SQL
         (SQL Server > Rede > Regras de firewall).
@@ -29,17 +37,17 @@
 ============================================================================= */
 
 SET NOCOUNT ON;
-GO
 
 /* ---------------------------------------------------------------- 1. schema */
+/* CREATE SCHEMA precisa ser a única instrução do seu lote. O EXEC resolve isso
+   sem depender de `GO`.                                                       */
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'lonetale')
 BEGIN
     EXEC('CREATE SCHEMA [lonetale] AUTHORIZATION [dbo]');
     PRINT 'Schema [lonetale] criado.';
 END
 ELSE
-    PRINT 'Schema [lonetale] já existia.';
-GO
+    PRINT 'Schema [lonetale] ja existia.';
 
 /* ------------------------------------------------- 2. usuário da aplicação */
 /* Menor privilégio: lê e escreve, mas não cria nem altera tabela nenhuma.
@@ -47,15 +55,10 @@ GO
 IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'lonetale_app')
 BEGIN
     CREATE USER [lonetale_app] WITH PASSWORD = '<TROQUE_SENHA_DA_APLICACAO>';
-    PRINT 'Usuário [lonetale_app] criado.';
+    PRINT 'Usuario [lonetale_app] criado.';
 END
 ELSE
-    PRINT 'Usuário [lonetale_app] já existia.';
-GO
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[lonetale] TO [lonetale_app];
-GRANT EXECUTE                        ON SCHEMA::[lonetale] TO [lonetale_app];
-GO
+    PRINT 'Usuario [lonetale_app] ja existia.';
 
 /* ------------------------------------------------ 3. usuário das migrations */
 /* Separado de propósito: só ele pode alterar estrutura, e só dentro do
@@ -63,54 +66,54 @@ GO
 IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'lonetale_migrator')
 BEGIN
     CREATE USER [lonetale_migrator] WITH PASSWORD = '<TROQUE_SENHA_DO_MIGRATOR>';
-    PRINT 'Usuário [lonetale_migrator] criado.';
+    PRINT 'Usuario [lonetale_migrator] criado.';
 END
 ELSE
-    PRINT 'Usuário [lonetale_migrator] já existia.';
-GO
+    PRINT 'Usuario [lonetale_migrator] ja existia.';
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[lonetale] TO [lonetale_migrator];
-GRANT ALTER, CONTROL                 ON SCHEMA::[lonetale] TO [lonetale_migrator];
-GRANT CREATE TABLE                   TO [lonetale_migrator];
-GO
+/* --------------------------------------------------------- 4. permissões */
+/* Via EXEC de propósito: o schema e os usuários podem ter acabado de nascer
+   neste mesmo lote, e assim a resolução dos nomes acontece na execução, não
+   na compilação do lote inteiro.                                            */
+EXEC('
+    GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[lonetale] TO [lonetale_app];
+    GRANT EXECUTE                        ON SCHEMA::[lonetale] TO [lonetale_app];
 
-/* ------------------------------------- 4. isolamento dos outros aplicativos */
+    GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[lonetale] TO [lonetale_migrator];
+    GRANT ALTER, CONTROL                 ON SCHEMA::[lonetale] TO [lonetale_migrator];
+    GRANT CREATE TABLE                   TO [lonetale_migrator];
+');
+
+PRINT 'Permissoes concedidas no schema [lonetale].';
+
+/* ------------------------------------- 5. isolamento dos outros aplicativos */
 /* O banco é compartilhado. Estas negações transformam "o LoneTale não deve
    tocar nos dados das outras aplicações" de combinação em garantia: mesmo um
    defeito ou uma query errada esbarra na permissão.
 
-   Acrescente uma linha para cada schema de outra aplicação que existir.       */
-DECLARE @outros TABLE (nome SYSNAME);
-INSERT INTO @outros (nome) VALUES ('dbo'), ('quest');
+   Acrescente o nome de cada schema de outra aplicação na lista do IN.        */
+DECLARE @denies NVARCHAR(MAX) = N'';
 
-DECLARE @schema SYSNAME, @sql NVARCHAR(400);
-DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
-    SELECT o.nome FROM @outros o
-    WHERE EXISTS (SELECT 1 FROM sys.schemas s WHERE s.name = o.nome);
+SELECT @denies = @denies
+     + N'DENY SELECT, INSERT, UPDATE, DELETE, ALTER ON SCHEMA::['
+     + s.name + N'] TO [lonetale_app], [lonetale_migrator];' + CHAR(10)
+  FROM sys.schemas s
+ WHERE s.name IN ('dbo', 'quest');
 
-OPEN cur;
-FETCH NEXT FROM cur INTO @schema;
-WHILE @@FETCH_STATUS = 0
+IF LEN(@denies) > 0
 BEGIN
-    SET @sql = N'DENY SELECT, INSERT, UPDATE, DELETE, ALTER ON SCHEMA::['
-             + @schema + N'] TO [lonetale_app], [lonetale_migrator];';
-    EXEC sp_executesql @sql;
-    PRINT 'Acesso negado ao schema [' + @schema + '].';
-    FETCH NEXT FROM cur INTO @schema;
+    EXEC sp_executesql @denies;
+    PRINT 'Acesso negado aos schemas das outras aplicacoes.';
 END
-CLOSE cur;
-DEALLOCATE cur;
-GO
+ELSE
+    PRINT 'Nenhum outro schema de aplicacao encontrado.';
 
-/* ------------------------------------------------------------ 5. conferência */
-PRINT '';
-PRINT '--- Schemas do banco ---';
+/* ------------------------------------------------------------ 6. conferência */
 SELECT name AS schema_existente
   FROM sys.schemas
  WHERE name IN ('lonetale', 'quest', 'dbo')
  ORDER BY name;
 
-PRINT '--- Permissões do LoneTale ---';
 SELECT USER_NAME(p.grantee_principal_id) AS usuario,
        p.state_desc                      AS estado,
        p.permission_name                 AS permissao,
@@ -119,7 +122,6 @@ SELECT USER_NAME(p.grantee_principal_id) AS usuario,
  WHERE USER_NAME(p.grantee_principal_id) IN ('lonetale_app', 'lonetale_migrator')
    AND p.class_desc = 'SCHEMA'
  ORDER BY usuario, no_schema, permissao;
-GO
 
 /* =============================================================================
    PRÓXIMO PASSO

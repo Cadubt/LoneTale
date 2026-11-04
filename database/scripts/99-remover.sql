@@ -13,12 +13,13 @@
    Este script existe para o caso de o schema precisar sair inteiro, incluindo
    os usuários — coisa que a migration não faz nem deve fazer.
 
-   Execute conectado ao banco da aplicação, como administrador.
+   Execute conectado ao banco da aplicação, como administrador, rodando o
+   arquivo INTEIRO de uma vez. Sem `GO`, para funcionar também em clientes que
+   não entendem esse separador (DBeaver, DataGrip).
 ============================================================================= */
 
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
-GO
 
 /* ------------------------------------------- 1. tabelas, na ordem das FKs */
 DECLARE @sql NVARCHAR(MAX) = N'';
@@ -43,7 +44,6 @@ BEGIN
 END
 ELSE
     PRINT 'Nenhuma tabela a remover em [lonetale].';
-GO
 
 /* ------------------------------------------------------------- 2. o schema */
 /* Só sai se estiver vazio — se sobrou algo que não era nosso, o schema fica. */
@@ -58,27 +58,24 @@ BEGIN
 END
 ELSE
     PRINT 'Schema [lonetale] mantido (inexistente ou ainda com objetos).';
-GO
 
 /* ----------------------------------------------------------- 3. usuários */
 IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'lonetale_app')
 BEGIN
     DROP USER [lonetale_app];
-    PRINT 'Usuário [lonetale_app] removido.';
+    PRINT 'Usuario [lonetale_app] removido.';
 END
 
 IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'lonetale_migrator')
 BEGIN
     DROP USER [lonetale_migrator];
-    PRINT 'Usuário [lonetale_migrator] removido.';
+    PRINT 'Usuario [lonetale_migrator] removido.';
 END
-GO
 
-PRINT '';
-PRINT 'Schemas restantes no banco:';
-SELECT name FROM sys.schemas
+/* ----------------------------------------------------------- 4. conferência */
+SELECT name AS schema_restante
+  FROM sys.schemas
  WHERE name NOT IN ('sys','INFORMATION_SCHEMA','guest','db_owner','db_accessadmin',
                     'db_securityadmin','db_ddladmin','db_backupoperator',
                     'db_datareader','db_datawriter','db_denydatareader','db_denydatawriter')
  ORDER BY name;
-GO
