@@ -1,5 +1,15 @@
 name: Azure Static Web Apps CI/CD
 
+# Publica o LoneTale Player (apps/web) no Azure Static Web Apps.
+#
+# O arquivo gerado pelo portal deixava o build por conta do Oryx, que roda
+# dentro do contentor da ação e adivinha a versão do Node. Num monorepo com
+# workspaces npm isso e frágil: o Oryx executaria `npm run build` na raiz, que
+# compila motor, API e frontend -- a API não vai para o Static Web Apps.
+#
+# Aqui o build acontece na própria Action, com a versão de Node declarada, e a
+# ação de deploy apenas envia a pasta pronta (`skip_app_build: true`).
+
 on:
   push:
     branches:
@@ -9,40 +19,90 @@ on:
     branches:
       - main
 
+# Um deploy por vez: dois merges seguidos não disputam o mesmo ambiente.
+concurrency:
+  group: swa-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     permissions:
-       id-token: write
-       contents: read
+      id-token: write
+      contents: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # O npm 9.6.x devolve código de saída 0 mesmo quando um script de
+      # workspace falha -- um build quebrado passaria por aqui como sucesso.
+      # Corrigido no npm 10; fixamos a versão para não depender de qual npm
+      # vem embutido no Node do runner.
+      - name: Garantir npm que propaga falhas
+        run: npm install -g npm@10
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # A ordem importa: o frontend e a API resolvem os tipos do motor pelo
+      # `dist` dele, que não está no controle de versão. Sem construir o motor
+      # primeiro, a verificação de tipos falha com dezenas de erros de módulo
+      # não encontrado.
+      - name: Construir o motor de aventuras
+        run: npm run build:engine
+
+      - name: Verificar tipos
+        run: npm run typecheck
+
+      - name: Testes do motor de aventuras
+        run: npm test
+
+      - name: Construir o frontend
+        run: npm run build -w @lonetale/web
+
+      # Rede de segurança: confirma que o build produziu mesmo o que vamos
+      # publicar, em vez de confiar apenas no código de saída.
+      - name: Conferir o artefato
+        run: |
+          test -s apps/web/dist/index.html
+          test -s apps/web/dist/staticwebapp.config.json
+          ls -la apps/web/dist/assets | head -20
+
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
+
       - name: Get Id Token
         uses: actions/github-script@v6
         id: idtoken
         with:
-           script: |
-               const coredemo = require('@actions/core')
-               return await coredemo.getIDToken()
-           result-encoding: string
+          script: |
+            const coredemo = require('@actions/core')
+            return await coredemo.getIDToken()
+          result-encoding: string
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_DUNE_0AE55AC1E }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/" # App source code path
-          api_location: "" # Api source code path - optional
-          output_location: "apps/web/dist" # Built app content directory - optional
+          ###### Repository/Build Configurations ######
+          # A pasta já vem construída pelos passos acima.
+          app_location: "apps/web/dist"
+          api_location: ""
+          output_location: ""
+          skip_app_build: true
+          skip_api_build: true
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
 
@@ -56,3 +116,4 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_DUNE_0AE55AC1E }}

@@ -10,7 +10,7 @@ import type { CompiledAdventure } from '../compile/compiled-adventure';
 import { explainCondition, firstFailureReason, summarizeRequirements } from '../conditions/evaluate';
 import type { AdventureNode } from '../types/adventure';
 import type { EffectEntry } from '../types/effects';
-import type { Id } from '../types/json';
+import type { Id, JsonPrimitive } from '../types/json';
 import type { GameState } from '../types/state';
 import type {
   AssetView,

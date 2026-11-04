@@ -17,7 +17,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "incremental": true,
+    // Compilacao incremental desligada de proposito: o `.tsbuildinfo` fica ao
+    // lado do tsconfig, nao dentro de `dist`. Apagar `dist` deixava o
+    // compilador convencido de que ja estava tudo emitido, e a build saia
+    // vazia sem erro nenhum. Estes pacotes compilam em segundos; o ganho nao
+    // paga o tipo de confusao que isso causa.
+    "incremental": false,
     "pretty": true
   },
   "exclude": ["node_modules", "dist"]
