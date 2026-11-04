@@ -20,44 +20,86 @@ Toda a estrutura própria vive no schema **`lonetale`**, e esse isolamento é
 verificado em três lugares: as entidades declaram `schema: LONETALE_SCHEMA`, o
 `DataSource` fixa `schema`, e a migration prefixa cada objeto.
 
-## Criando o schema
+## Preparando o banco
 
-A aplicação não cria o schema por padrão — em banco compartilhado, criar schema
-é ato deliberado do DBA:
+Tudo o que exige privilégio de administrador está em
+[`database/scripts/`](../database/scripts). São dois arquivos, e a aplicação
+nunca precisa dessas permissões:
 
-```sql
-IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'lonetale')
-  EXEC('CREATE SCHEMA [lonetale]');
+| Script | Faz |
+|---|---|
+| `01-schema-e-usuarios.sql` | cria o schema `lonetale` e os dois usuários |
+| `99-remover.sql` | desfaz tudo o que é do LoneTale, e nada além |
+
+Execute o primeiro **uma vez**, conectado ao banco da aplicação (não ao
+`master`), com o administrador do servidor. Ele é idempotente.
+
+Depois disso o caminho é só:
+
+```
+1. 01-schema-e-usuarios.sql    (admin, uma vez)
+2. preencher o .env
+3. npm run migration:run
 ```
 
-Para desenvolvimento, `DB_ALLOW_SCHEMA_CREATION=true` autoriza a aplicação a
-criar o schema no arranque, se ele não existir e houver permissão. Falhando,
-`SchemaBootstrapService` registra uma instrução clara em vez de improvisar.
+A aplicação **não** cria o schema por conta própria: `DB_ALLOW_SCHEMA_CREATION`
+vem desligado. Em banco compartilhado, criar schema é um ato deliberado de quem
+administra o banco, não efeito colateral de subir um processo. Faltando o
+schema, o `SchemaBootstrapService` registra a instrução no log e segue — em vez
+de improvisar.
 
 ## Privilégios
 
-Separe quem executa de quem migra.
+Dois usuários, com papéis distintos:
 
-**Usuário da aplicação** — apenas DML no schema:
+| Usuário | Pode | Usado por |
+|---|---|---|
+| `lonetale_app` | ler e escrever no schema `lonetale` | a API, o tempo todo |
+| `lonetale_migrator` | o acima, mais alterar estrutura | só as migrations |
+
+As credenciais do migrator vão em `DB_ADMIN_USERNAME` / `DB_ADMIN_PASSWORD`, e
+são usadas **apenas** por `buildDataSourceOptions(..., { forMigrations: true })`.
+Se você omitir, as migrations caem para as credenciais da aplicação — o que faz
+a API rodar o tempo todo com permissão de derrubar tabela. Vale separar.
+
+### Isolamento garantido pelo banco, não por disciplina
+
+O script nega explicitamente, aos dois usuários, acesso aos schemas das outras
+aplicações:
 
 ```sql
-CREATE USER [lonetale_app] FOR LOGIN [lonetale_app];
-GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::lonetale TO [lonetale_app];
--- Necessário para o SELECT ... WITH (UPDLOCK) do pipeline de ações.
-GRANT VIEW DEFINITION ON SCHEMA::lonetale TO [lonetale_app];
+DENY SELECT, INSERT, UPDATE, DELETE, ALTER ON SCHEMA::[quest] TO [lonetale_app];
 ```
 
-**Usuário das migrations** — DDL no schema:
+A diretriz "não modificar tabelas de outras aplicações" deixa de depender de
+code review e passa a esbarrar na permissão. Se o banco ganhar um schema novo
+de outro sistema, acrescente-o à lista no início do script.
 
-```sql
-CREATE USER [lonetale_migrator] FOR LOGIN [lonetale_migrator];
-GRANT ALTER, CONTROL ON SCHEMA::lonetale TO [lonetale_migrator];
-GRANT CREATE TABLE TO [lonetale_migrator];
-```
+## Azure SQL Database
 
-Informe as credenciais administrativas em `DB_ADMIN_USERNAME` /
-`DB_ADMIN_PASSWORD`: elas são usadas **só** pelas migrations
-(`buildDataSourceOptions(..., { forMigrations: true })`).
+O cenário em produção é um Azure SQL compartilhado. Três diferenças em relação
+a um SQL Server local:
+
+**Usuários contidos.** No Azure SQL não se cria login no servidor para este
+caso; cria-se o usuário dentro do banco, com senha própria
+(`CREATE USER ... WITH PASSWORD`). É o que o script faz.
+
+**`DB_TRUST_SERVER_CERTIFICATE=false`.** O certificado do Azure é válido e
+emitido por autoridade reconhecida. Deixar `true` ali desliga a validação e
+abre espaço para interceptação — `true` só faz sentido contra um servidor local
+com certificado autoassinado.
+
+**Firewall.** O servidor bloqueia tudo por padrão. Libere:
+- o seu IP, para rodar migrations da sua máquina
+  (SQL Server → Rede → Regras de firewall);
+- "Permitir que serviços e recursos do Azure acessem este servidor", para a API
+  quando ela estiver hospedada lá.
+
+Sobre camada de serviço: a Básica entrega 5 DTUs e 2 GB. Para desenvolvimento e
+para as primeiras partidas é suficiente, mas vale saber o que pressiona esse
+limite — cada ação do jogador grava o snapshot da partida e algumas linhas de
+evento, numa transação. Dividindo os mesmos 5 DTUs com outras aplicações, o
+gargalo aparece primeiro em escrita concorrente, não em espaço.
 
 ## Migrations
 
