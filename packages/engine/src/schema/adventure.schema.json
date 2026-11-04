@@ -1247,6 +1247,17 @@
       }
     },
 
+    "nodeChapter": {
+      "type": "object",
+      "required": ["number"],
+      "additionalProperties": false,
+      "description": "Capitulo editorial do no. Nao afeta a navegacao nem as condicoes.",
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string", "maxLength": 200 }
+      }
+    },
+
     "nodeMedia": {
       "type": "object",
       "required": ["assetId"],
@@ -1319,6 +1330,7 @@
                 "type": { "const": "story" },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
@@ -1359,6 +1371,7 @@
                 },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
@@ -1409,6 +1422,7 @@
                 },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
@@ -1449,6 +1463,7 @@
                 "leaveNodeId": { "$ref": "#/$defs/id" },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
@@ -1473,6 +1488,7 @@
                 "continueNodeId": { "$ref": "#/$defs/id" },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
@@ -1512,6 +1528,7 @@
                 "continueNodeId": { "$ref": "#/$defs/id" },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
@@ -1565,6 +1582,7 @@
                 },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
@@ -1589,6 +1607,7 @@
                 "continueNodeId": { "$ref": "#/$defs/id" },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },
@@ -1612,6 +1631,7 @@
                 "endingId": { "$ref": "#/$defs/id" },
                 "id": { "$ref": "#/$defs/id" },
                 "title": { "type": "string" },
+                "chapter": { "$ref": "#/$defs/nodeChapter" },
                 "text": { "type": "string" },
                 "image": { "$ref": "#/$defs/id" },
                 "media": { "type": "array", "items": { "$ref": "#/$defs/nodeMedia" } },

@@ -4,17 +4,7 @@
 
 @layer base {
   :root {
-    --surface: 15 13 9;
-    --surface-raised: 26 23 17;
-    --border-soft: 69 58 41;
     color-scheme: dark;
-  }
-
-  :root[data-theme='light'] {
-    --surface: 246 243 236;
-    --surface-raised: 255 255 255;
-    --border-soft: 210 198 174;
-    color-scheme: light;
   }
 
   html {
@@ -24,19 +14,18 @@
   body {
     margin: 0;
     min-height: 100dvh;
-    background-color: rgb(var(--surface));
-    background-image:
-      radial-gradient(1200px 600px at 50% -10%, rgba(210, 114, 31, 0.08), transparent 60%),
-      radial-gradient(800px 400px at 100% 100%, rgba(74, 111, 208, 0.06), transparent 60%);
-    color: theme('colors.ink.100');
+    color: theme('colors.parchment.100');
     font-family: theme('fontFamily.body');
-    font-size: 17px;
-    line-height: 1.7;
+    font-size: 16px;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
-  }
-
-  :root[data-theme='light'] body {
-    color: theme('colors.ink.900');
+    background-color: theme('colors.night.950');
+    /* A mesa: madeira escura com um brilho de tocha vindo de cima. */
+    background-image:
+      radial-gradient(1400px 700px at 50% -15%, rgba(210, 140, 50, 0.1), transparent 62%),
+      radial-gradient(900px 500px at 10% 110%, rgba(74, 111, 208, 0.06), transparent 60%),
+      linear-gradient(180deg, #14100b 0%, #0a0705 100%);
+    background-attachment: fixed;
   }
 
   h1,
@@ -44,69 +33,107 @@
   h3 {
     font-family: theme('fontFamily.display');
     letter-spacing: 0.01em;
-    line-height: 1.25;
+    line-height: 1.22;
   }
 
-  /* Foco sempre visível: a navegação por teclado é parte da acessibilidade,
-     não um detalhe. */
+  /* Navegacao por teclado e parte da acessibilidade, nao um detalhe. */
   :focus-visible {
-    outline: 2px solid theme('colors.ember.400');
+    outline: 2px solid theme('colors.gold.400');
     outline-offset: 2px;
     border-radius: 4px;
   }
 
-  button {
-    font-family: theme('fontFamily.ui');
-  }
-
   ::selection {
-    background: rgba(210, 114, 31, 0.35);
+    background: rgba(227, 170, 67, 0.35);
+    color: #2a1c0e;
   }
 }
 
 @layer components {
-  .lt-panel {
-    @apply rounded-xl border bg-ink-900/70 shadow-panel backdrop-blur-sm;
-    border-color: rgb(var(--border-soft) / 0.6);
+  /* ------------------------------------------------------------- pergaminho */
+  .parchment {
+    @apply bg-parchment-sheet text-sepia-800 shadow-parchment;
+    /* Fibras do papel: duas tramas finas e irregulares. */
+    background-image:
+      repeating-linear-gradient(
+        92deg,
+        rgba(140, 105, 55, 0.045) 0px,
+        rgba(140, 105, 55, 0.045) 1px,
+        transparent 1px,
+        transparent 4px
+      ),
+      repeating-linear-gradient(
+        3deg,
+        rgba(120, 90, 45, 0.035) 0px,
+        rgba(120, 90, 45, 0.035) 1px,
+        transparent 1px,
+        transparent 7px
+      ),
+      linear-gradient(160deg, #fbf3e0 0%, #f4e4c1 38%, #e8d6ae 72%, #ddc89c 100%);
   }
 
-  :root[data-theme='light'] .lt-panel {
-    @apply bg-white/80;
+  /* Superficie escura dos trilhos e barras. */
+  .rail {
+    @apply bg-bronze-rail;
+    box-shadow:
+      inset 0 1px 0 rgba(217, 179, 92, 0.12),
+      0 10px 30px rgba(0, 0, 0, 0.45);
   }
 
-  .lt-prose {
-    @apply text-[1.0625rem] leading-relaxed text-ink-100/90;
+  /* Borda de metal: fina linha clara por dentro, escura por fora. */
+  .edge-bronze {
+    border: 1px solid theme('colors.bronze.500');
+    box-shadow:
+      inset 0 0 0 1px rgba(217, 179, 92, 0.22),
+      0 2px 10px rgba(0, 0, 0, 0.35);
   }
 
-  :root[data-theme='light'] .lt-prose {
-    @apply text-ink-800;
+  /* Texto narrativo: medida confortavel e capitular na abertura. */
+  .narrative {
+    @apply font-body text-[1.0625rem] leading-[1.75] text-sepia-800;
   }
 
-  /* Texto narrativo: parágrafos espaçados, primeira letra destacada. */
-  .lt-narrative p {
-    @apply mb-4;
+  .narrative p + p {
+    @apply mt-4;
   }
 
-  .lt-narrative > p:first-of-type::first-letter {
-    @apply float-left mr-2 mt-1 font-display text-4xl leading-none text-ember-400;
+  .narrative > p:first-of-type::first-letter {
+    @apply float-left mr-2 mt-1.5 font-display text-[2.9rem] leading-[0.78] text-blood-700;
   }
 
-  .lt-scrollbar {
+  .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.ink.700') transparent;
+    scrollbar-color: theme('colors.bronze.600') transparent;
   }
 
-  .lt-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
   }
 
-  .lt-scrollbar::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-ink-700;
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-bronze-600;
+  }
+
+  /* Faixa de cabecalho das aventuras. */
+  .banner-strip {
+    background:
+      linear-gradient(180deg, rgba(58, 42, 28, 0.95) 0%, rgba(28, 20, 16, 0.95) 100%);
   }
 }
 
-/* React Flow: tema escuro para o editor de aventuras. */
+@layer utilities {
+  /* Alvo de toque minimo: a plataforma nasce pensada para o celular. */
+  .tap {
+    min-height: 44px;
+  }
+
+  .text-shadow-ink {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+}
+
+/* React Flow no Adventure Studio. */
 .react-flow__attribution {
   display: none;
 }

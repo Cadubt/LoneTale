@@ -33,11 +33,11 @@ function IssueList({ issues, tone }: { issues: ValidationIssue[]; tone: 'error' 
       >
         {tone === 'error' ? `${issues.length} erro(s)` : `${issues.length} aviso(s)`}
       </h3>
-      <ul className="lt-scrollbar max-h-56 space-y-1 overflow-y-auto pr-1">
+      <ul className="scrollbar-thin max-h-56 space-y-1 overflow-y-auto pr-1">
         {issues.map((issue, index) => (
           <li key={index} className="font-ui text-[12px]">
-            <code className="text-ink-400">{issue.path}</code>{' '}
-            <span className={tone === 'error' ? 'text-blood-400' : 'text-ink-200'}>
+            <code className="text-parchment-400">{issue.path}</code>{' '}
+            <span className={tone === 'error' ? 'text-blood-400' : 'text-parchment-200'}>
               {issue.message}
             </span>
           </li>
@@ -84,8 +84,8 @@ export function StudioListPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display text-2xl text-ink-50">Adventure Studio</h1>
-        <p className="mt-1 max-w-2xl font-ui text-sm text-ink-300">
+        <h1 className="font-display text-2xl text-parchment-50">Adventure Studio</h1>
+        <p className="mt-1 max-w-2xl font-ui text-sm text-parchment-300">
           Aventuras são documentos JSON. Nenhuma história exige alterar o código da plataforma: você
           valida, grava e publica — e a versão publicada vira imutável.
         </p>
@@ -95,7 +95,7 @@ export function StudioListPage() {
         <PanelTitle hint="valide antes de importar">Importar aventura</PanelTitle>
 
         <div className="flex flex-wrap gap-2">
-          <label className="inline-flex min-h-[44px] cursor-pointer items-center rounded-lg border border-ink-700 bg-ink-800/80 px-4 font-ui text-sm text-ink-100 hover:bg-ink-700/80">
+          <label className="inline-flex min-h-[44px] cursor-pointer items-center rounded-lg border border-night-700 bg-night-800/80 px-4 font-ui text-sm text-parchment-100 hover:bg-night-700/80">
             Escolher arquivo .json
             <input
               type="file"
@@ -124,7 +124,7 @@ export function StudioListPage() {
           </Button>
         </div>
 
-        <label htmlFor="documento" className="mb-1 mt-4 block font-ui text-xs text-ink-300">
+        <label htmlFor="documento" className="mb-1 mt-4 block font-ui text-xs text-parchment-300">
           Documento
         </label>
         <textarea
@@ -137,7 +137,7 @@ export function StudioListPage() {
           rows={10}
           spellCheck={false}
           placeholder='{ "schemaVersion": "1.0.0", "metadata": { … } }'
-          className="lt-scrollbar w-full resize-y rounded-lg border border-ink-700 bg-ink-950/80 px-3 py-2.5 font-mono text-[12px] leading-relaxed text-ink-100 focus:border-ember-500 focus:outline-none"
+          className="scrollbar-thin w-full resize-y rounded-lg border border-night-700 bg-night-950/80 px-3 py-2.5 font-mono text-[12px] leading-relaxed text-parchment-100 focus:border-ember-500 focus:outline-none"
         />
 
         {parseError && <p className="mt-2 font-ui text-[13px] text-blood-400">{parseError}</p>}
@@ -175,7 +175,7 @@ export function StudioListPage() {
         )}
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <label className="inline-flex items-center gap-2 font-ui text-sm text-ink-200">
+          <label className="inline-flex items-center gap-2 font-ui text-sm text-parchment-200">
             <input
               type="checkbox"
               checked={publishNow}
@@ -217,7 +217,7 @@ export function StudioListPage() {
       </Panel>
 
       <section>
-        <h2 className="mb-3 font-display text-lg text-ink-50">Suas aventuras</h2>
+        <h2 className="mb-3 font-display text-lg text-parchment-50">Suas aventuras</h2>
 
         {isLoading && <LoadingBlock />}
         {error && (
@@ -241,14 +241,14 @@ export function StudioListPage() {
                 <Panel className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-display text-base text-ink-50">{adventure.title}</h3>
+                      <h3 className="font-display text-base text-parchment-50">{adventure.title}</h3>
                       <Badge
                         tone={
                           adventure.status === 'published'
                             ? 'moss'
                             : adventure.status === 'archived'
                               ? 'neutral'
-                              : 'ember'
+                              : 'gold'
                         }
                       >
                         {adventure.status === 'published'
@@ -262,7 +262,7 @@ export function StudioListPage() {
                       )}
                       {adventure.draftVersion && <Badge>v{adventure.draftVersion} em edição</Badge>}
                     </div>
-                    <p className="font-ui text-[12px] text-ink-400">{adventure.slug}</p>
+                    <p className="font-ui text-[12px] text-parchment-400">{adventure.slug}</p>
                   </div>
                   <Button variant="secondary" onClick={() => navigate(`/studio/${adventure.id}`)}>
                     Abrir

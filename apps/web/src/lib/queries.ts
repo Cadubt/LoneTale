@@ -218,10 +218,39 @@ export function useAdventureDetail(slug: string | undefined) {
   });
 }
 
-export function useSessions() {
+export function useSessions(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: queryKeys.sessions(),
     queryFn: () => apiRequest<SessionSummary[]>('/sessions'),
+    enabled: options.enabled ?? true,
+  });
+}
+
+export interface PersistedEvent {
+  id: string;
+  sequence: number;
+  ordinal: number;
+  kind: string;
+  nodeId: string | null;
+  actionType: string | null;
+  payload: string;
+  createdAt: string;
+}
+
+/**
+ * Historico persistido da partida.
+ *
+ * O painel "Historico" precisa sobreviver a um recarregamento da pagina, e o
+ * estado projetado so carrega os eventos do ultimo passo. Este e o log gravado
+ * no servidor.
+ */
+export function useSessionEvents(sessionId: string | undefined, limit = 60) {
+  return useQuery({
+    queryKey: queryKeys.sessionEvents(sessionId ?? ''),
+    queryFn: () =>
+      apiRequest<PersistedEvent[]>(`/sessions/${sessionId}/events?limit=${limit}`),
+    enabled: Boolean(sessionId),
+    staleTime: 0,
   });
 }
 

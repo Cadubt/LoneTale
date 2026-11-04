@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Badge, Button, EmptyState, ErrorNotice, LoadingBlock, Panel } from '../components/ui';
 import { useAbandonSession, useSessions } from '../lib/queries';
 
-const STATUS: Record<string, { label: string; tone: 'ember' | 'moss' | 'blood' | 'neutral' }> = {
-  active: { label: 'em andamento', tone: 'ember' },
+const STATUS: Record<string, { label: string; tone: 'gold' | 'moss' | 'blood' | 'neutral' }> = {
+  active: { label: 'em andamento', tone: 'gold' },
   completed: { label: 'concluída', tone: 'moss' },
   defeated: { label: 'derrota', tone: 'blood' },
   abandoned: { label: 'abandonada', tone: 'neutral' },
@@ -46,7 +46,7 @@ export function SessionsPage() {
         title="Nenhuma partida ainda"
         description="Escolha uma aventura no catálogo, crie seu personagem e comece a sua lenda."
         action={
-          <Button variant="primary" onClick={() => navigate('/')}>
+          <Button variant="primary" onClick={() => navigate('/aventuras')}>
             Ver o catálogo
           </Button>
         }
@@ -56,7 +56,7 @@ export function SessionsPage() {
 
   return (
     <div>
-      <h1 className="mb-5 font-display text-2xl text-ink-50">Suas partidas</h1>
+      <h1 className="mb-5 font-display text-2xl text-parchment-50">Suas partidas</h1>
 
       <ul className="space-y-3">
         {data.map((session) => {
@@ -68,15 +68,15 @@ export function SessionsPage() {
               <Panel className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-display text-base text-ink-50">{session.adventureTitle}</h2>
+                    <h2 className="font-display text-base text-parchment-50">{session.adventureTitle}</h2>
                     <Badge tone={status.tone}>{status.label}</Badge>
                     <Badge>v{session.adventureVersion}</Badge>
                   </div>
-                  <p className="mt-1 font-ui text-[13px] text-ink-300">
+                  <p className="mt-1 font-ui text-[13px] text-parchment-300">
                     {session.characterName} · nível {session.characterLevel} ·{' '}
                     {formatPlaytime(session.playtimeSeconds)} de jogo
                   </p>
-                  <p className="font-ui text-[11px] text-ink-500">
+                  <p className="font-ui text-[11px] text-bronze-500">
                     atualizada em{' '}
                     {new Date(session.updatedAt).toLocaleString('pt-BR', {
                       dateStyle: 'short',
@@ -116,9 +116,9 @@ export function SessionsPage() {
         })}
       </ul>
 
-      <p className="mt-6 text-center font-ui text-sm text-ink-400">
+      <p className="mt-6 text-center font-ui text-sm text-parchment-400">
         Quer começar outra?{' '}
-        <Link to="/" className="text-ember-300 underline-offset-2 hover:underline">
+        <Link to="/aventuras" className="text-gold-300 underline-offset-2 hover:underline">
           Veja o catálogo
         </Link>
         .

@@ -6,6 +6,8 @@ import { LoadingBlock } from './components/ui';
 import { restoreSession } from './lib/api-client';
 import { AdventureDetailPage } from './pages/AdventureDetailPage';
 import { CatalogPage } from './pages/CatalogPage';
+import { CharactersPage } from './pages/CharactersPage';
+import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { PlayPage } from './pages/PlayPage';
 import { SessionsPage } from './pages/SessionsPage';
@@ -55,9 +57,18 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<CatalogPage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/entrar" element={<LoginPage />} />
+        <Route path="/aventuras" element={<CatalogPage />} />
         <Route path="/aventuras/:slug" element={<AdventureDetailPage />} />
+        <Route
+          path="/personagens"
+          element={
+            <RequireAuth>
+              <CharactersPage />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/partidas"
           element={

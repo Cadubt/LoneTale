@@ -638,8 +638,8 @@ Primeiro item da ordem recomendada.
 | 15 — Persistência e salvamento | **Pronto** / não verificado | executar contra banco |
 | 16 — Adventure Studio | **Parcial** | ver seção 13 acima |
 | 17 — Imagens | **Não feito** | upload, Azure Blob, categorias de mídia |
-| 18 — Narração por voz | **Não feito** | TTS do navegador, controles, abstração para Azure Speech, áudio pré-gravado |
-| 19 — Experiência do jogador | **Parcial** | controles de narração; classes permitidas no catálogo |
+| 18 — Narração por voz | **Parcial** | TTS do navegador pronto (voz, velocidade, narração automática, mudo); falta áudio pré-gravado por cena e a implementação Azure Speech atrás da abstração |
+| 19 — Experiência do jogador | **Parcial** | classes permitidas no catálogo; imagens reais |
 | 20 — Meta Quest e WebXR | **Não feito** | correto: fora do MVP. Arquitetura já reserva espaço |
 | 21 — Segurança | **Pronto** em quase tudo | revisão sistemática de logs |
 | 22 — Aventura demonstrativa | **Pronto** | corrigida nesta entrega: nome e introdução |

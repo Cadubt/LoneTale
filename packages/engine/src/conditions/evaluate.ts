@@ -372,3 +372,94 @@ function flagReason(compiled: CompiledAdventure, flag: Id): string {
 export function firstFailureReason(result: ConditionResult): string | undefined {
   return result.failed[0]?.reason;
 }
+
+/**
+ * Resumo positivo dos requisitos de uma condicao satisfeita.
+ *
+ * O avaliador ja explica por que uma escolha esta bloqueada; isto e o contrario:
+ * quando ela esta liberada *porque* o personagem cumpre algo, a interface pode
+ * dizer o que foi ("Voce possui: Corda (1)"). E o que diferencia uma opcao
+ * conquistada de uma que sempre esteve ali.
+ *
+ * Devolve `undefined` quando nenhuma folha rende um rotulo util -- condicoes de
+ * flag ou de no visitado, por exemplo, nao viram texto porque dependem de
+ * contexto narrativo que a interface nao deve revelar.
+ */
+export function summarizeRequirements(
+  condition: Condition | undefined,
+  context: EvaluationContext,
+): string | undefined {
+  if (!condition) {
+    return undefined;
+  }
+  const labels: string[] = [];
+  collectRequirementLabels(condition, context, labels);
+  const unique = [...new Set(labels)];
+  return unique.length > 0 ? unique.join(' · ') : undefined;
+}
+
+function collectRequirementLabels(
+  condition: Condition,
+  context: EvaluationContext,
+  into: string[],
+): void {
+  const { compiled, state } = context;
+  const character = state.character;
+
+  switch (condition.type) {
+    case 'all':
+    case 'any':
+      for (const child of condition.conditions) {
+        collectRequirementLabels(child, context, into);
+      }
+      break;
+
+    case 'hasItem': {
+      const owned = itemQuantity(character, condition.itemId);
+      const name = compiled.label('item', condition.itemId);
+      // A quantidade vai junto: saber que resta apenas uma corda muda a decisao.
+      into.push(`${name} (${owned})`);
+      break;
+    }
+
+    case 'hasEquippedItem':
+      if (condition.itemId) {
+        into.push(compiled.label('item', condition.itemId));
+      }
+      break;
+
+    case 'hasSkill':
+      into.push(compiled.label('skill', condition.skillId));
+      break;
+
+    case 'attributeAtLeast':
+      into.push(`${compiled.label('attribute', condition.attributeId)} ${condition.value}+`);
+      break;
+
+    case 'goldAtLeast':
+      into.push(`${condition.value} de ${compiled.doc.ruleset.economy?.currencyName ?? 'ouro'}`);
+      break;
+
+    case 'resourceAtLeast':
+      if (!condition.asRatio) {
+        into.push(`${condition.value} de ${compiled.label('resource', condition.resourceId)}`);
+      }
+      break;
+
+    case 'hasClass':
+      into.push(condition.classIds.map((id) => compiled.classes.get(id)?.name ?? id).join(' ou '));
+      break;
+
+    case 'hasRace':
+      into.push(condition.raceIds.map((id) => compiled.races.get(id)?.name ?? id).join(' ou '));
+      break;
+
+    case 'levelAtLeast':
+      into.push(`Nível ${condition.value}`);
+      break;
+
+    default:
+      // `not`, flags, missoes e visitas nao viram rotulo: revelariam o enredo.
+      break;
+  }
+}

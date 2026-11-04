@@ -463,10 +463,24 @@ export interface Choice {
   tags?: string[];
 }
 
+/**
+ * Capitulo a que um no pertence.
+ *
+ * Puramente editorial: serve para o cabecalho da interface ("Capitulo 2: A
+ * Ponte Destruida") e para orientar o leitor em historias longas. O motor nao
+ * usa capitulo para nada -- navegacao e condicoes continuam ligadas apenas aos
+ * nos.
+ */
+export interface NodeChapter {
+  number: number;
+  title?: string;
+}
+
 export interface BaseNode {
   id: Id;
   type: NodeType;
   title?: string;
+  chapter?: NodeChapter;
   text?: string;
   image?: Id;
   media?: NodeMedia[];

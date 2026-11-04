@@ -4,22 +4,25 @@ export function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(' ');
 }
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+// ------------------------------------------------------------------ botoes
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'parchment';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-ember-500 text-ink-950 hover:bg-ember-400 active:bg-ember-600 shadow-glow font-semibold',
+    'bg-gold-choice text-sepia-900 border border-bronze-400 font-semibold shadow-gold hover:brightness-105 active:brightness-95',
   secondary:
-    'bg-ink-800/80 text-ink-100 border border-ink-700 hover:bg-ink-700/80 active:bg-ink-800',
-  ghost: 'text-ink-200 hover:bg-ink-800/60',
-  danger: 'bg-blood-500 text-ink-50 hover:bg-blood-400 active:bg-blood-600 font-semibold',
+    'bg-night-700 text-parchment-100 border border-bronze-500 hover:bg-night-600 active:bg-night-800',
+  ghost: 'text-parchment-200 hover:bg-night-700/70 border border-transparent',
+  danger:
+    'bg-blood-600 text-parchment-50 border border-blood-700 font-semibold hover:bg-blood-500 active:bg-blood-700',
+  parchment:
+    'bg-parchment-200 text-sepia-800 border border-bronze-400 hover:bg-parchment-100 active:bg-parchment-300',
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  // Alvos de toque de 44px: a plataforma nasce pensada para o celular.
   sm: 'min-h-[36px] px-3 text-sm',
-  md: 'min-h-[44px] px-4 text-[0.95rem]',
+  md: 'tap px-4 text-[0.95rem]',
   lg: 'min-h-[52px] px-6 text-base',
 };
 
@@ -46,7 +49,7 @@ export function Button({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-lg transition-colors',
+        'inline-flex items-center justify-center gap-2 rounded-md transition-all',
         'disabled:cursor-not-allowed disabled:opacity-50',
         VARIANTS[variant],
         SIZES[size],
@@ -60,13 +63,14 @@ export function Button({
   );
 }
 
+// ------------------------------------------------------------------ paineis
 export function Panel({
   children,
   className,
   ...rest
 }: HTMLAttributes<HTMLDivElement> & { children: ReactNode }) {
   return (
-    <div {...rest} className={cx('lt-panel p-4 sm:p-5', className)}>
+    <div {...rest} className={cx('rail edge-bronze rounded-lg p-4 sm:p-5', className)}>
       {children}
     </div>
   );
@@ -75,20 +79,24 @@ export function Panel({
 export function PanelTitle({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
   return (
     <div className="mb-3 flex items-baseline justify-between gap-3">
-      <h2 className="font-display text-sm uppercase tracking-[0.18em] text-ember-300">{children}</h2>
-      {hint && <span className="text-xs text-ink-300">{hint}</span>}
+      <h2 className="font-display text-sm uppercase tracking-[0.16em] text-bronze-300">
+        {children}
+      </h2>
+      {hint && <span className="font-sans text-xs text-parchment-400">{hint}</span>}
     </div>
   );
 }
 
-type BadgeTone = 'neutral' | 'ember' | 'arcane' | 'blood' | 'moss';
+// ------------------------------------------------------------------ selos
+type BadgeTone = 'neutral' | 'gold' | 'arcane' | 'blood' | 'moss' | 'parchment';
 
 const BADGE_TONES: Record<BadgeTone, string> = {
-  neutral: 'bg-ink-800 text-ink-200 border-ink-700',
-  ember: 'bg-ember-700/25 text-ember-300 border-ember-700/50',
-  arcane: 'bg-arcane-600/25 text-arcane-300 border-arcane-600/50',
-  blood: 'bg-blood-600/25 text-blood-400 border-blood-600/50',
-  moss: 'bg-moss-600/25 text-moss-400 border-moss-600/50',
+  neutral: 'bg-night-700 text-parchment-200 border-bronze-600',
+  gold: 'bg-gold-500/20 text-gold-300 border-gold-500/55',
+  arcane: 'bg-arcane-600/25 text-arcane-300 border-arcane-600/55',
+  blood: 'bg-blood-600/25 text-blood-400 border-blood-600/55',
+  moss: 'bg-moss-600/25 text-moss-400 border-moss-600/55',
+  parchment: 'bg-parchment-300/70 text-sepia-800 border-bronze-400',
 };
 
 export function Badge({
@@ -103,7 +111,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-ui text-[11px] font-medium uppercase tracking-wide',
+        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-sans text-[11px] font-medium uppercase tracking-wide',
         BADGE_TONES[tone],
         className,
       )}
@@ -113,52 +121,83 @@ export function Badge({
   );
 }
 
+// ------------------------------------------------------------------ barras
 /** Barra de recurso (vida, mana). Acessivel como progressbar. */
 export function Meter({
   label,
+  icon,
   current,
   max,
   color,
   compact = false,
+  inline = false,
 }: {
   label: string;
+  icon?: ReactNode;
   current: number;
   max: number;
   color?: string;
   compact?: boolean;
+  inline?: boolean;
 }) {
   const safeMax = Math.max(1, max);
   const ratio = Math.max(0, Math.min(1, current / safeMax));
   const critical = ratio <= 0.25;
 
   return (
-    <div>
-      <div className="mb-1 flex items-baseline justify-between font-ui text-xs">
-        <span className={cx('text-ink-300', critical && 'text-blood-400')}>{label}</span>
-        <span className="tabular-nums text-ink-200">
-          {Math.round(current)} / {Math.round(safeMax)}
+    <div className={cx(inline && 'flex items-center gap-2')}>
+      <div
+        className={cx(
+          'flex items-baseline justify-between gap-2 font-sans text-xs',
+          inline ? 'shrink-0' : 'mb-1',
+        )}
+      >
+        <span className={cx('flex items-center gap-1.5', critical ? 'text-blood-400' : 'text-parchment-300')}>
+          {icon}
+          {!inline && label}
         </span>
+        {!inline && (
+          <span className="tabular-nums text-parchment-200">
+            {Math.round(current)} / {Math.round(safeMax)}
+          </span>
+        )}
       </div>
+
       <div
         role="progressbar"
         aria-label={label}
         aria-valuenow={Math.round(current)}
         aria-valuemin={0}
         aria-valuemax={Math.round(safeMax)}
-        className={cx('overflow-hidden rounded-full bg-ink-800', compact ? 'h-1.5' : 'h-2.5')}
+        className={cx(
+          'overflow-hidden rounded-full border border-black/40 bg-night-950 shadow-inset',
+          inline ? 'h-2 flex-1' : compact ? 'h-1.5' : 'h-2.5',
+        )}
       >
         <div
-          className={cx('h-full rounded-full transition-[width] duration-500', critical && 'animate-pulse-soft')}
+          className={cx(
+            'h-full rounded-full transition-[width] duration-500',
+            critical && 'animate-pulse-soft',
+          )}
           style={{
             width: `${ratio * 100}%`,
-            backgroundColor: color ?? (critical ? '#c0392b' : '#d2721f'),
+            background: color
+              ? `linear-gradient(180deg, ${color} 0%, ${color} 55%, rgba(0,0,0,0.25) 100%)`
+              : 'linear-gradient(180deg,#e06b5f 0%,#c0392b 55%,#7b241c 100%)',
           }}
         />
       </div>
+
+      {inline && (
+        <span className="shrink-0 font-sans text-xs tabular-nums text-parchment-200">
+          {Math.round(current)} / {Math.round(safeMax)}
+        </span>
+      )}
     </div>
   );
 }
 
+// ------------------------------------------------------------------ estados
 export function Spinner({ className }: { className?: string }) {
   return (
     <svg
@@ -168,21 +207,16 @@ export function Spinner({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
-      <path
-        d="M21 12a9 9 0 0 0-9-9"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
+      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
     </svg>
   );
 }
 
 export function LoadingBlock({ label = 'Carregando…' }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-3 py-12 text-ink-300" role="status">
+    <div className="flex items-center justify-center gap-3 py-12 text-parchment-300" role="status">
       <Spinner />
-      <span className="font-ui text-sm">{label}</span>
+      <span className="font-sans text-sm">{label}</span>
     </div>
   );
 }
@@ -197,15 +231,15 @@ export function ErrorNotice({
   onRetry?: () => void;
 }) {
   return (
-    <Panel className="border-blood-600/40 bg-blood-600/10">
+    <div className="rounded-lg border border-blood-600/50 bg-blood-700/15 p-4">
       <h2 className="font-display text-base text-blood-400">{title}</h2>
-      <p className="mt-1 font-ui text-sm text-ink-200">{message}</p>
+      <p className="mt-1 font-sans text-sm text-parchment-200">{message}</p>
       {onRetry && (
         <Button className="mt-3" size="sm" onClick={onRetry}>
           Tentar de novo
         </Button>
       )}
-    </Panel>
+    </div>
   );
 }
 
@@ -219,19 +253,19 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="lt-panel px-6 py-12 text-center">
-      <h2 className="font-display text-lg text-ink-100">{title}</h2>
-      <p className="mx-auto mt-2 max-w-md font-ui text-sm text-ink-300">{description}</p>
+    <div className="rail edge-bronze rounded-lg px-6 py-12 text-center">
+      <h2 className="font-display text-lg text-parchment-100">{title}</h2>
+      <p className="mx-auto mt-2 max-w-md font-sans text-sm text-parchment-300">{description}</p>
       {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
   );
 }
 
-/** Parágrafos a partir de texto com linhas em branco. */
-export function Narrative({ text }: { text: string }) {
+/** Paragrafos a partir de texto com linhas em branco, em tinta sobre pergaminho. */
+export function Narrative({ text, className }: { text: string; className?: string }) {
   const paragraphs = text.split(/\n{2,}/).filter((part) => part.trim().length > 0);
   return (
-    <div className="lt-prose lt-narrative">
+    <div className={cx('narrative', className)}>
       {paragraphs.map((paragraph, index) => (
         <p key={index}>{paragraph}</p>
       ))}

@@ -13,18 +13,18 @@ export type GameEvent =
   | { type: 'choiceTaken'; nodeId: Id; choiceId: Id; label: string }
   | { type: 'effectApplied'; effect: Effect; detail?: string }
   | { type: 'effectSkipped'; effect: Effect; reason: string }
-  | { type: 'itemGained'; itemId: Id; quantity: number }
-  | { type: 'itemLost'; itemId: Id; quantity: number }
-  | { type: 'itemEquipped'; itemId: Id; slot: string }
-  | { type: 'itemUnequipped'; itemId: Id; slot: string }
+  | { type: 'itemGained'; itemId: Id; itemName: string; quantity: number }
+  | { type: 'itemLost'; itemId: Id; itemName: string; quantity: number }
+  | { type: 'itemEquipped'; itemId: Id; itemName: string; slot: string }
+  | { type: 'itemUnequipped'; itemId: Id; itemName: string; slot: string }
   | { type: 'goldChanged'; delta: number; total: number }
   | { type: 'resourceChanged'; resourceId: Id; delta: number; current: number; max: number }
   | { type: 'attributeChanged'; attributeId: Id; delta: number; value: number }
   | { type: 'experienceGained'; amount: number; total: number }
   | { type: 'leveledUp'; level: number; attributePoints: number }
-  | { type: 'skillUnlocked'; skillId: Id }
+  | { type: 'skillUnlocked'; skillId: Id; skillName: string }
   | { type: 'flagChanged'; flag: Id; value: JsonPrimitive }
-  | { type: 'questChanged'; questId: Id; status: string; stage: number }
+  | { type: 'questChanged'; questId: Id; questName: string; status: string; stage: number }
   | { type: 'npcRelationChanged'; npcId: Id; delta: number; value: number }
   | { type: 'diceRolled'; purpose: string; roll: DiceRoll }
   | {

@@ -51,14 +51,14 @@ export function CombatPanel({
                 className={cx(
                   'w-full rounded-lg border px-3 py-2.5 text-left transition-colors',
                   !enemy.alive
-                    ? 'border-ink-800 bg-ink-900/40 opacity-50'
+                    ? 'border-night-800 bg-night-900/40 opacity-50'
                     : selected
                       ? 'border-blood-500 bg-blood-600/15'
-                      : 'border-ink-700 bg-ink-800/40 hover:border-blood-500/50',
+                      : 'border-night-700 bg-night-800/40 hover:border-blood-500/50',
                 )}
               >
                 <div className="mb-1.5 flex items-center justify-between gap-2">
-                  <span className="font-body text-sm text-ink-50">{enemy.name}</span>
+                  <span className="font-body text-sm text-parchment-50">{enemy.name}</span>
                   {enemy.alive ? (
                     selected && <Badge tone="blood">alvo</Badge>
                   ) : (
@@ -97,7 +97,7 @@ export function CombatPanel({
               >
                 <span className="truncate">{skill.name}</span>
                 {skill.cost && (
-                  <span className="font-ui text-[11px] text-ink-300">−{skill.cost.amount}</span>
+                  <span className="font-ui text-[11px] text-parchment-300">−{skill.cost.amount}</span>
                 )}
               </Button>
             ))}
@@ -134,7 +134,7 @@ export function CombatPanel({
           {combat.usableSkills
             .filter((skill) => !skill.available && skill.blockedReason)
             .map((skill) => (
-              <li key={skill.skillId} className="font-ui text-[12px] italic text-ink-400">
+              <li key={skill.skillId} className="font-ui text-[12px] italic text-parchment-400">
                 {skill.name}: {skill.blockedReason}
               </li>
             ))}

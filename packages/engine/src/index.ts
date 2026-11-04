@@ -54,7 +54,13 @@ export {
 } from './random/dice';
 
 // Condicoes
-export { evaluateCondition, explainCondition, firstFailureReason, type EvaluationContext } from './conditions/evaluate';
+export {
+  evaluateCondition,
+  explainCondition,
+  firstFailureReason,
+  summarizeRequirements,
+  type EvaluationContext,
+} from './conditions/evaluate';
 
 // Efeitos
 export {

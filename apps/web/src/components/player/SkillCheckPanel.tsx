@@ -31,11 +31,11 @@ export function SkillCheckPanel({
             {check.bonus} de bônus
           </Badge>
         )}
-        <span className="font-ui text-sm text-ink-300">contra dificuldade</span>
-        <Badge tone="ember">{check.difficulty}</Badge>
+        <span className="font-ui text-sm text-parchment-300">contra dificuldade</span>
+        <Badge tone="gold">{check.difficulty}</Badge>
       </div>
 
-      <p className="mt-2 font-ui text-[13px] text-ink-400">
+      <p className="mt-2 font-ui text-[13px] text-parchment-400">
         {[
           check.attributeName && `atributo: ${check.attributeName}`,
           check.skillName && `perícia: ${check.skillName}`,
@@ -49,7 +49,7 @@ export function SkillCheckPanel({
       </Button>
 
       {check.attempts > 0 && check.retryAllowed && (
-        <p className="mt-2 font-ui text-[12px] italic text-ink-400">
+        <p className="mt-2 font-ui text-[12px] italic text-parchment-400">
           Você pode tentar de novo.
         </p>
       )}

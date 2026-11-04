@@ -216,7 +216,12 @@ function unequipIfEquipped(context: EffectContext, itemId: Id): void {
   for (const [slot, equipped] of Object.entries(character.equipment)) {
     if (equipped === itemId) {
       character.equipment[slot] = null;
-      pushEvent(context, { type: 'itemUnequipped', itemId, slot });
+      pushEvent(context, {
+        type: 'itemUnequipped',
+        itemId,
+        itemName: context.compiled.label('item', itemId),
+        slot,
+      });
     }
   }
 }
@@ -249,10 +254,20 @@ export function equipItem(context: EffectContext, itemId: Id, slot?: string): vo
   const previous = character.equipment[targetSlot];
   if (previous) {
     character.equipment[targetSlot] = null;
-    pushEvent(context, { type: 'itemUnequipped', itemId: previous, slot: targetSlot });
+    pushEvent(context, {
+      type: 'itemUnequipped',
+      itemId: previous,
+      itemName: compiled.label('item', previous),
+      slot: targetSlot,
+    });
   }
   character.equipment[targetSlot] = itemId;
-  pushEvent(context, { type: 'itemEquipped', itemId, slot: targetSlot });
+  pushEvent(context, {
+    type: 'itemEquipped',
+    itemId,
+    itemName: item.name,
+    slot: targetSlot,
+  });
   recomputeResourceMaxima(compiled, character);
 }
 
@@ -263,7 +278,12 @@ export function unequipSlot(context: EffectContext, slot: string): void {
     return;
   }
   character.equipment[slot] = null;
-  pushEvent(context, { type: 'itemUnequipped', itemId, slot });
+  pushEvent(context, {
+    type: 'itemUnequipped',
+    itemId,
+    itemName: context.compiled.label('item', itemId),
+    slot,
+  });
   recomputeResourceMaxima(context.compiled, character);
 }
 
@@ -314,6 +334,7 @@ function setQuest(context: EffectContext, questId: Id, next: QuestState): void {
   pushEvent(context, {
     type: 'questChanged',
     questId,
+    questName: context.compiled.label('quest', questId),
     status: next.status,
     stage: next.stage,
   });
@@ -328,7 +349,12 @@ export function applyEffect(effect: Effect, context: EffectContext): void {
     case 'addItem': {
       const quantity = effect.quantity ?? 1;
       addItemToInventory(compiled, character, effect.itemId, quantity);
-      pushEvent(context, { type: 'itemGained', itemId: effect.itemId, quantity });
+      pushEvent(context, {
+        type: 'itemGained',
+        itemId: effect.itemId,
+        itemName: compiled.label('item', effect.itemId),
+        quantity,
+      });
       break;
     }
 
@@ -350,7 +376,12 @@ export function applyEffect(effect: Effect, context: EffectContext): void {
         recomputeResourceMaxima(compiled, character);
       }
       if (removed > 0) {
-        pushEvent(context, { type: 'itemLost', itemId: effect.itemId, quantity: removed });
+        pushEvent(context, {
+          type: 'itemLost',
+          itemId: effect.itemId,
+          itemName: compiled.label('item', effect.itemId),
+          quantity: removed,
+        });
       }
       break;
     }
@@ -465,7 +496,11 @@ export function applyEffect(effect: Effect, context: EffectContext): void {
     case 'unlockSkill': {
       if (!character.skillIds.includes(effect.skillId)) {
         character.skillIds.push(effect.skillId);
-        pushEvent(context, { type: 'skillUnlocked', skillId: effect.skillId });
+        pushEvent(context, {
+          type: 'skillUnlocked',
+          skillId: effect.skillId,
+          skillName: compiled.label('skill', effect.skillId),
+        });
       }
       break;
     }

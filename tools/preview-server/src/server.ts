@@ -93,6 +93,17 @@ const VERSION_ID = 'preview-version';
 // Estado em memoria, espelhado em disco
 // ---------------------------------------------------------------------------
 
+interface StoredEvent {
+  id: string;
+  sequence: number;
+  ordinal: number;
+  kind: string;
+  nodeId: string | null;
+  actionType: string | null;
+  payload: string;
+  createdAt: string;
+}
+
 interface StoredSession {
   id: string;
   state: GameState;
@@ -100,6 +111,30 @@ interface StoredSession {
   startedAt: string;
   updatedAt: string;
   playtimeSeconds: number;
+  /** Log da partida, do mais recente para o mais antigo. */
+  events: StoredEvent[];
+}
+
+/** Quantos eventos manter por partida na pre-visualizacao. */
+const MAX_STORED_EVENTS = 300;
+
+function toStoredEvents(
+  sequence: number,
+  actionType: string,
+  nodeId: string,
+  events: readonly unknown[],
+): StoredEvent[] {
+  const now = new Date().toISOString();
+  return events.map((event, index) => ({
+    id: randomUUID(),
+    sequence,
+    ordinal: index,
+    kind: (event as { type?: string }).type ?? 'unknown',
+    nodeId: ((event as { nodeId?: string }).nodeId ?? nodeId) || null,
+    actionType,
+    payload: JSON.stringify(event),
+    createdAt: now,
+  }));
 }
 
 const sessions = new Map<string, StoredSession>();
@@ -114,7 +149,7 @@ function loadSessions(): void {
       // Partidas gravadas por uma versao anterior da aventura sao descartadas:
       // o estado so faz sentido junto do documento que o gerou.
       if (entry.state?.adventureVersion === document.metadata.version) {
-        sessions.set(entry.id, entry);
+        sessions.set(entry.id, { ...entry, events: entry.events ?? [] });
       }
     }
     process.stdout.write(`[preview] ${sessions.size} partida(s) recuperada(s) do disco.\n`);
@@ -278,7 +313,11 @@ function requireSession(id: string): StoredSession {
   return entry;
 }
 
-function touch(entry: StoredSession, state: GameState): StoredSession {
+function touch(
+  entry: StoredSession,
+  state: GameState,
+  newEvents: StoredEvent[] = [],
+): StoredSession {
   const now = new Date();
   const elapsed = Math.min(
     300,
@@ -290,6 +329,7 @@ function touch(entry: StoredSession, state: GameState): StoredSession {
     characterName: state.character.name,
     playtimeSeconds: entry.playtimeSeconds + elapsed,
     updatedAt: now.toISOString(),
+    events: [...newEvents, ...entry.events].slice(0, MAX_STORED_EVENTS),
   };
   sessions.set(entry.id, updated);
   saveSessions();
@@ -411,6 +451,12 @@ const server = createServer(async (req, res) => {
         startedAt: now,
         updatedAt: now,
         playtimeSeconds: 0,
+        events: toStoredEvents(
+          step.state.sequence,
+          'startGame',
+          step.state.currentNodeId,
+          step.events,
+        ).reverse(),
       };
       sessions.set(entry.id, entry);
       saveSessions();
@@ -422,16 +468,27 @@ const server = createServer(async (req, res) => {
       const entry = requireSession(actionMatch[1] as string);
       const action = (await readBody(req)) as unknown as PlayerAction;
       const step = engine.apply(entry.state, action);
-      const updated = touch(entry, step.state);
+      const updated = touch(
+        entry,
+        step.state,
+        toStoredEvents(
+          step.state.sequence,
+          (action as { type?: string }).type ?? 'unknown',
+          step.state.currentNodeId,
+          step.events,
+        ).reverse(),
+      );
       return sendJson(res, 200, { sessionId: updated.id, view: step.view, events: step.events });
     }
 
     const eventsMatch = /^\/api\/sessions\/([^/]+)\/events$/.exec(path);
     if (eventsMatch) {
-      requireSession(eventsMatch[1] as string);
-      // O servidor de pre-visualizacao nao guarda o log por acao; o diario da
-      // interface e alimentado pelos eventos devolvidos em cada passo.
-      return sendJson(res, 200, []);
+      const entry = requireSession(eventsMatch[1] as string);
+      const limit = Math.min(
+        MAX_STORED_EVENTS,
+        Math.max(1, Number.parseInt(url.searchParams.get('limit') ?? '100', 10) || 100),
+      );
+      return sendJson(res, 200, entry.events.slice(0, limit));
     }
 
     const sessionMatch = /^\/api\/sessions\/([^/]+)$/.exec(path);

@@ -38,7 +38,7 @@ function AppearanceControl({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block font-ui text-xs text-ink-300">
+      <label htmlFor={id} className="mb-1 block font-ui text-xs text-parchment-300">
         {field.label}
         {field.required && <span className="ml-1 text-ember-400">*</span>}
       </label>
@@ -58,13 +58,13 @@ function AppearanceControl({
                   'inline-flex min-h-[36px] items-center gap-2 rounded-lg border px-3 font-ui text-[13px] transition-colors',
                   selected
                     ? 'border-ember-500 bg-ember-700/20 text-ember-200'
-                    : 'border-ink-700 bg-ink-800/50 text-ink-200 hover:border-ink-600',
+                    : 'border-night-700 bg-night-800/50 text-parchment-200 hover:border-bronze-600',
                 )}
               >
                 {option.color && (
                   <span
                     aria-hidden="true"
-                    className="h-3.5 w-3.5 rounded-full border border-ink-600"
+                    className="h-3.5 w-3.5 rounded-full border border-bronze-600"
                     style={{ backgroundColor: option.color }}
                   />
                 )}
@@ -85,9 +85,9 @@ function AppearanceControl({
             step={field.step ?? 1}
             value={typeof value === 'number' ? value : (field.min ?? 0)}
             onChange={(event) => onChange(Number(event.target.value))}
-            className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-ink-800 accent-ember-500"
+            className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-night-800 accent-ember-500"
           />
-          <span className="w-20 shrink-0 text-right font-ui text-sm tabular-nums text-ink-100">
+          <span className="w-20 shrink-0 text-right font-ui text-sm tabular-nums text-parchment-100">
             {typeof value === 'number' ? value : (field.min ?? 0)}
             {field.unit ? ` ${field.unit}` : ''}
           </span>
@@ -101,7 +101,7 @@ function AppearanceControl({
           maxLength={field.maxLength}
           value={typeof value === 'string' ? value : ''}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-lg border border-ink-700 bg-ink-900/70 px-3 py-2.5 font-ui text-sm text-ink-50 focus:border-ember-500 focus:outline-none"
+          className="w-full rounded-lg border border-night-700 bg-night-900/70 px-3 py-2.5 font-ui text-sm text-parchment-50 focus:border-ember-500 focus:outline-none"
         />
       )}
 
@@ -111,7 +111,7 @@ function AppearanceControl({
           type="color"
           value={typeof value === 'string' ? value : '#cccccc'}
           onChange={(event) => onChange(event.target.value)}
-          className="h-10 w-20 cursor-pointer rounded-lg border border-ink-700 bg-ink-900"
+          className="h-10 w-20 cursor-pointer rounded-lg border border-night-700 bg-night-900"
         />
       )}
     </div>
@@ -290,12 +290,12 @@ export function AdventureDetailPage() {
   return (
     <div className="space-y-6">
       <header>
-        <Button variant="ghost" size="sm" className="mb-3" onClick={() => navigate('/')}>
+        <Button variant="ghost" size="sm" className="mb-3" onClick={() => navigate('/aventuras')}>
           ← Catálogo
         </Button>
-        <h1 className="font-display text-2xl text-ink-50 sm:text-3xl">{data.title}</h1>
+        <h1 className="font-display text-2xl text-parchment-50 sm:text-3xl">{data.title}</h1>
         <div className="mt-2 flex flex-wrap gap-1.5">
-          <Badge tone="ember">v{data.version}</Badge>
+          <Badge tone="gold">v{data.version}</Badge>
           <Badge tone="arcane">{data.ruleset.name}</Badge>
           {data.world && <Badge>{data.world}</Badge>}
           {data.ageRating && <Badge>{data.ageRating}</Badge>}
@@ -307,7 +307,7 @@ export function AdventureDetailPage() {
         <Panel>
           <Narrative text={data.description} />
           {data.contentWarnings.length > 0 && (
-            <p className="mt-4 font-ui text-[12px] text-ink-400">
+            <p className="mt-4 font-ui text-[12px] text-parchment-400">
               Conteúdo sensível: {data.contentWarnings.join(', ')}.
             </p>
           )}
@@ -316,7 +316,7 @@ export function AdventureDetailPage() {
 
       {!authenticated ? (
         <Panel>
-          <p className="font-ui text-sm text-ink-200">
+          <p className="font-ui text-sm text-parchment-200">
             Entre para criar seu personagem e começar esta aventura.
           </p>
           <Button variant="primary" className="mt-3" onClick={() => navigate('/entrar')}>
@@ -325,8 +325,8 @@ export function AdventureDetailPage() {
         </Panel>
       ) : (
         <>
-          <h2 className="font-display text-xl text-ink-50">Crie seu personagem</h2>
-          {creation.intro && <p className="font-ui text-sm text-ink-300">{creation.intro}</p>}
+          <h2 className="font-display text-xl text-parchment-50">Crie seu personagem</h2>
+          {creation.intro && <p className="font-ui text-sm text-parchment-300">{creation.intro}</p>}
 
           {startSession.error && (
             <ErrorNotice
@@ -341,7 +341,7 @@ export function AdventureDetailPage() {
 
           <Panel>
             <PanelTitle>Identidade</PanelTitle>
-            <label htmlFor="char-name" className="mb-1 block font-ui text-xs text-ink-300">
+            <label htmlFor="char-name" className="mb-1 block font-ui text-xs text-parchment-300">
               Nome
             </label>
             <input
@@ -351,7 +351,7 @@ export function AdventureDetailPage() {
               maxLength={creation.name.maxLength}
               onChange={(event) => setName(event.target.value)}
               placeholder={creation.name.suggestions[0] ?? 'Seu nome na lenda'}
-              className="w-full rounded-lg border border-ink-700 bg-ink-900/70 px-3 py-2.5 font-ui text-sm text-ink-50 focus:border-ember-500 focus:outline-none"
+              className="w-full rounded-lg border border-night-700 bg-night-900/70 px-3 py-2.5 font-ui text-sm text-parchment-50 focus:border-ember-500 focus:outline-none"
             />
             {creation.name.suggestions.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -360,7 +360,7 @@ export function AdventureDetailPage() {
                     key={suggestion}
                     type="button"
                     onClick={() => setName(suggestion)}
-                    className="rounded-full border border-ink-700 px-2.5 py-1 font-ui text-[12px] text-ink-300 hover:border-ember-600/60 hover:text-ember-300"
+                    className="rounded-full border border-night-700 px-2.5 py-1 font-ui text-[12px] text-parchment-300 hover:border-ember-600/60 hover:text-ember-300"
                   >
                     {suggestion}
                   </button>
@@ -395,12 +395,12 @@ export function AdventureDetailPage() {
                         'w-full rounded-lg border px-3 py-2.5 text-left transition-colors',
                         selected
                           ? 'border-ember-500 bg-ember-700/15'
-                          : 'border-ink-700 bg-ink-800/40 hover:border-ink-600',
+                          : 'border-night-700 bg-night-800/40 hover:border-bronze-600',
                       )}
                     >
-                      <span className="block font-body text-sm text-ink-50">{entry.name}</span>
+                      <span className="block font-body text-sm text-parchment-50">{entry.name}</span>
                       {entry.description && (
-                        <span className="mt-0.5 block font-ui text-[12px] text-ink-400">
+                        <span className="mt-0.5 block font-ui text-[12px] text-parchment-400">
                           {entry.description}
                         </span>
                       )}
@@ -427,12 +427,12 @@ export function AdventureDetailPage() {
                         'w-full rounded-lg border px-3 py-2.5 text-left transition-colors',
                         selected
                           ? 'border-ember-500 bg-ember-700/15'
-                          : 'border-ink-700 bg-ink-800/40 hover:border-ink-600',
+                          : 'border-night-700 bg-night-800/40 hover:border-bronze-600',
                       )}
                     >
-                      <span className="block font-body text-sm text-ink-50">{entry.name}</span>
+                      <span className="block font-body text-sm text-parchment-50">{entry.name}</span>
                       {entry.description && (
-                        <span className="mt-0.5 block font-ui text-[12px] text-ink-400">
+                        <span className="mt-0.5 block font-ui text-[12px] text-parchment-400">
                           {entry.description}
                         </span>
                       )}
@@ -464,14 +464,14 @@ export function AdventureDetailPage() {
                   return (
                     <li
                       key={definition.id}
-                      className="flex items-center justify-between gap-3 rounded-lg bg-ink-800/40 px-3 py-2"
+                      className="flex items-center justify-between gap-3 rounded-lg bg-night-800/40 px-3 py-2"
                     >
                       <div className="min-w-0">
-                        <span className="block font-body text-sm text-ink-50">
+                        <span className="block font-body text-sm text-parchment-50">
                           {definition.name}
                         </span>
                         {definition.description && (
-                          <span className="block font-ui text-[12px] text-ink-400">
+                          <span className="block font-ui text-[12px] text-parchment-400">
                             {definition.description}
                           </span>
                         )}
@@ -486,7 +486,7 @@ export function AdventureDetailPage() {
                         >
                           −
                         </Button>
-                        <span className="w-7 text-center font-display text-base tabular-nums text-ink-50">
+                        <span className="w-7 text-center font-display text-base tabular-nums text-parchment-50">
                           {value}
                         </span>
                         <Button
@@ -503,7 +503,7 @@ export function AdventureDetailPage() {
                   );
                 })}
               </ul>
-              <p className="mt-2 font-ui text-[12px] text-ink-400">
+              <p className="mt-2 font-ui text-[12px] text-parchment-400">
                 Modificadores de classe e espécie entram depois, sobre estes valores.
               </p>
             </Panel>
@@ -512,7 +512,7 @@ export function AdventureDetailPage() {
           {creation.attributes.method === 'roll' && (
             <Panel>
               <PanelTitle>Atributos</PanelTitle>
-              <p className="font-ui text-sm text-ink-300">
+              <p className="font-ui text-sm text-parchment-300">
                 Esta aventura sorteia os atributos ({creation.attributes.rollDice}). A rolagem
                 acontece no servidor quando a partida começa.
               </p>
@@ -549,7 +549,7 @@ export function AdventureDetailPage() {
                 onChange={(event) => setDescription(event.target.value)}
                 rows={4}
                 placeholder="Uma cicatriz, um juramento, uma dívida antiga…"
-                className="w-full resize-y rounded-lg border border-ink-700 bg-ink-900/70 px-3 py-2.5 font-body text-sm text-ink-50 focus:border-ember-500 focus:outline-none"
+                className="w-full resize-y rounded-lg border border-night-700 bg-night-900/70 px-3 py-2.5 font-body text-sm text-parchment-50 focus:border-ember-500 focus:outline-none"
               />
             </Panel>
           )}

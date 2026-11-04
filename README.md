@@ -27,10 +27,11 @@ requisito, está em **[`docs/planejamento-tecnico.md`](docs/planejamento-tecnico
 | **Contrato JSON + validação** | Pronto — JSON Schema 2020-12 + validação semântica |
 | **API REST + Swagger** | Pronto — auth, catálogo, Studio, partidas, telemetria |
 | **Persistence Layer** | Escrito e tipado, **nunca executado contra um banco** |
-| **LoneTale Player** (`apps/web`) | Pronto — catálogo, criação de personagem, jogo, combate, comércio |
+| **LoneTale Player** (`apps/web`) | Pronto — início, catálogo, personagens, criação de ficha, jogo, combate, comércio, narração |
 | **Adventure Studio** | Parcial — importa, valida, publica e desenha o mapa; **sem edição visual, editor JSON decente ou simulador** |
 | **Combate** | Parcial — faltam resistências, vulnerabilidades, comportamento, ação Defender e efeitos temporários |
-| **Imagens e narração por voz** | Não feito |
+| **Narração por voz** | Pronto — TTS do navegador, com voz, velocidade e narração automática; abstração pronta para Azure Speech |
+| **Imagens** | Não feito — upload e Azure Blob pendentes; a pré-visualização gera imagens de exemplo |
 | **WebXR / Meta Quest** | Não iniciado — fora do MVP por decisão; a arquitetura reserva espaço |
 
 Dois pontos que valem destaque, porque mudam o que você pode concluir do resto:

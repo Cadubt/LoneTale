@@ -7,7 +7,7 @@ import {
   totalArmor,
 } from '../character/derive';
 import type { CompiledAdventure } from '../compile/compiled-adventure';
-import { explainCondition, firstFailureReason } from '../conditions/evaluate';
+import { explainCondition, firstFailureReason, summarizeRequirements } from '../conditions/evaluate';
 import type { AdventureNode } from '../types/adventure';
 import type { EffectEntry } from '../types/effects';
 import type { Id } from '../types/json';
@@ -100,7 +100,14 @@ function buildChoices(compiled: CompiledAdventure, state: GameState, node: Adven
       id: choice.id,
       label: choice.label,
       available,
+      conditional: Boolean(choice.conditions),
     };
+    if (available && choice.conditions) {
+      const satisfied = summarizeRequirements(choice.conditions, context);
+      if (satisfied) {
+        view.satisfiedLabel = satisfied;
+      }
+    }
     if (choice.description !== undefined) {
       view.description = choice.description;
     }
@@ -489,6 +496,7 @@ export function buildView(compiled: CompiledAdventure, state: GameState): NodeVi
       id: node.id,
       type: node.type,
       ...(node.title !== undefined ? { title: node.title } : {}),
+      ...(node.chapter !== undefined ? { chapter: node.chapter } : {}),
       ...(node.text !== undefined ? { text: node.text } : {}),
       image: asset(compiled, node.image),
       ...(node.media

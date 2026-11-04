@@ -17,18 +17,18 @@ function Field({
   const id = `field-${props.name}`;
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block font-ui text-xs text-ink-300">
+      <label htmlFor={id} className="mb-1 block font-ui text-xs text-parchment-300">
         {label}
       </label>
       <input
         {...props}
         id={id}
         className={cx(
-          'w-full rounded-lg border border-ink-700 bg-ink-900/70 px-3 py-2.5 font-ui text-sm text-ink-50',
-          'placeholder:text-ink-500 focus:border-ember-500 focus:outline-none',
+          'w-full rounded-lg border border-night-700 bg-night-900/70 px-3 py-2.5 font-ui text-sm text-parchment-50',
+          'placeholder:text-bronze-500 focus:border-ember-500 focus:outline-none',
         )}
       />
-      {hint && <p className="mt-1 font-ui text-[11px] text-ink-400">{hint}</p>}
+      {hint && <p className="mt-1 font-ui text-[11px] text-parchment-400">{hint}</p>}
     </div>
   );
 }
@@ -126,10 +126,10 @@ export function LoginPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="mb-1 text-center font-display text-2xl text-ink-50">
+      <h1 className="mb-1 text-center font-display text-2xl text-parchment-50">
         {mode === 'login' ? 'Entre na taverna' : 'Crie sua conta'}
       </h1>
-      <p className="mb-6 text-center font-ui text-sm text-ink-400">
+      <p className="mb-6 text-center font-ui text-sm text-parchment-400">
         Um jogador. Infinitas aventuras. Incontáveis destinos.
       </p>
 
@@ -187,16 +187,16 @@ export function LoginPage() {
         </form>
 
         <div className="my-4 flex items-center gap-3">
-          <span className="h-px flex-1 bg-ink-800" />
-          <span className="font-ui text-[11px] uppercase tracking-wider text-ink-500">ou</span>
-          <span className="h-px flex-1 bg-ink-800" />
+          <span className="h-px flex-1 bg-night-800" />
+          <span className="font-ui text-[11px] uppercase tracking-wider text-bronze-500">ou</span>
+          <span className="h-px flex-1 bg-night-800" />
         </div>
 
         <Button variant="secondary" size="lg" block onClick={startGoogle}>
           Continuar com o Google
         </Button>
 
-        <p className="mt-5 text-center font-ui text-sm text-ink-400">
+        <p className="mt-5 text-center font-ui text-sm text-parchment-400">
           {mode === 'login' ? 'Ainda não tem conta?' : 'Já tem conta?'}{' '}
           <button
             type="button"

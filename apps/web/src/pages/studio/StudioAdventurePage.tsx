@@ -37,14 +37,14 @@ function AdventureFlowNode({ data, selected }: NodeProps) {
   return (
     <div
       className={cx(
-        'w-48 rounded-lg border-2 bg-ink-900/95 px-3 py-2 shadow-panel',
+        'w-48 rounded-lg border-2 bg-night-900/95 px-3 py-2 shadow-panel',
         selected ? 'border-ember-400' : 'border-transparent',
       )}
       style={{ borderLeftColor: color, borderLeftWidth: 4 }}
     >
       <Handle type="target" position={Position.Left} />
       <div className="flex items-start justify-between gap-1.5">
-        <span className="line-clamp-2 font-display text-[12px] leading-snug text-ink-50">
+        <span className="line-clamp-2 font-display text-[12px] leading-snug text-parchment-50">
           {node.label}
         </span>
         {node.checkpoint && (
@@ -53,7 +53,7 @@ function AdventureFlowNode({ data, selected }: NodeProps) {
           </span>
         )}
       </div>
-      <div className="mt-1 flex items-center gap-2 font-ui text-[10px] text-ink-400">
+      <div className="mt-1 flex items-center gap-2 font-ui text-[10px] text-parchment-400">
         <span style={{ color }}>{NODE_TYPE_LABELS[node.nodeType] ?? node.nodeType}</span>
         {node.choiceCount > 0 && <span>{node.choiceCount} escolha(s)</span>}
         {!node.hasText && node.nodeType !== 'checkpoint' && (
@@ -109,20 +109,20 @@ export function StudioAdventurePage() {
           ← Studio
         </Button>
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="mr-auto font-display text-2xl text-ink-50">{data.adventure.title}</h1>
+          <h1 className="mr-auto font-display text-2xl text-parchment-50">{data.adventure.title}</h1>
           {published && <Badge tone="moss">v{published.version} no ar</Badge>}
-          {draft && <Badge tone="ember">v{draft.version} em edição</Badge>}
+          {draft && <Badge tone="gold">v{draft.version} em edição</Badge>}
         </div>
-        <p className="font-ui text-[12px] text-ink-400">{data.adventure.slug}</p>
+        <p className="font-ui text-[12px] text-parchment-400">{data.adventure.slug}</p>
       </header>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <Panel className="p-0">
-          <div className="flex items-center justify-between gap-2 border-b border-ink-800 px-4 py-3">
+          <div className="flex items-center justify-between gap-2 border-b border-night-800 px-4 py-3">
             <h2 className="font-display text-sm uppercase tracking-[0.18em] text-ember-300">
               Mapa da história
             </h2>
-            <span className="font-ui text-[11px] text-ink-400">
+            <span className="font-ui text-[11px] text-parchment-400">
               {graph.nodes.length} nós · {graph.edges.length} ligações
             </span>
           </div>
@@ -132,7 +132,7 @@ export function StudioAdventurePage() {
               <LoadingBlock label="Carregando o documento…" />
             ) : graph.nodes.length === 0 ? (
               <div className="grid h-full place-items-center px-6 text-center">
-                <p className="font-ui text-sm text-ink-400">
+                <p className="font-ui text-sm text-parchment-400">
                   Nenhum nó para desenhar. Grave um rascunho com nós para ver o mapa.
                 </p>
               </div>
@@ -168,8 +168,8 @@ export function StudioAdventurePage() {
               </h3>
               <ul className="mt-1 space-y-0.5">
                 {graph.danglingTargets.slice(0, 8).map((entry, index) => (
-                  <li key={index} className="font-ui text-[12px] text-ink-200">
-                    <code className="text-ink-400">{entry.from}</code> aponta para{' '}
+                  <li key={index} className="font-ui text-[12px] text-parchment-200">
+                    <code className="text-parchment-400">{entry.from}</code> aponta para{' '}
                     <code className="text-blood-400">{entry.to}</code>
                   </li>
                 ))}
@@ -183,7 +183,7 @@ export function StudioAdventurePage() {
             <PanelTitle>Legenda</PanelTitle>
             <ul className="space-y-1.5">
               {Object.entries(NODE_TYPE_LABELS).map(([type, label]) => (
-                <li key={type} className="flex items-center gap-2 font-ui text-[12px] text-ink-300">
+                <li key={type} className="flex items-center gap-2 font-ui text-[12px] text-parchment-300">
                   <span
                     aria-hidden="true"
                     className="h-2.5 w-2.5 rounded"
@@ -201,17 +201,17 @@ export function StudioAdventurePage() {
               {data.versions.map((version) => (
                 <li
                   key={version.id}
-                  className="rounded-lg border border-ink-800 bg-ink-800/40 px-3 py-2"
+                  className="rounded-lg border border-night-800 bg-night-800/40 px-3 py-2"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-display text-sm text-ink-50">v{version.version}</span>
+                    <span className="font-display text-sm text-parchment-50">v{version.version}</span>
                     <Badge
                       tone={
                         version.status === 'published'
                           ? 'moss'
                           : version.status === 'deprecated'
                             ? 'neutral'
-                            : 'ember'
+                            : 'gold'
                       }
                     >
                       {version.status === 'published'
@@ -221,11 +221,11 @@ export function StudioAdventurePage() {
                           : 'rascunho'}
                     </Badge>
                   </div>
-                  <p className="font-ui text-[11px] text-ink-400">
+                  <p className="font-ui text-[11px] text-parchment-400">
                     {version.nodeCount} nós · contrato {version.schemaVersion}
                   </p>
                   {version.publishedAt && (
-                    <p className="font-ui text-[11px] text-ink-500">
+                    <p className="font-ui text-[11px] text-bronze-500">
                       publicada em{' '}
                       {new Date(version.publishedAt).toLocaleDateString('pt-BR')}
                     </p>
@@ -238,26 +238,26 @@ export function StudioAdventurePage() {
           {draft ? (
             <Panel>
               <PanelTitle>Publicar v{draft.version}</PanelTitle>
-              <p className="mb-3 font-ui text-[12px] text-ink-400">
+              <p className="mb-3 font-ui text-[12px] text-parchment-400">
                 Depois de publicada, a versão não muda mais. Partidas em andamento continuam na
                 versão em que começaram.
               </p>
 
-              <label htmlFor="visibility" className="mb-1 block font-ui text-xs text-ink-300">
+              <label htmlFor="visibility" className="mb-1 block font-ui text-xs text-parchment-300">
                 Visibilidade
               </label>
               <select
                 id="visibility"
                 value={visibility}
                 onChange={(event) => setVisibility(event.target.value)}
-                className="mb-3 w-full rounded-lg border border-ink-700 bg-ink-900/70 px-3 py-2.5 font-ui text-sm text-ink-50 focus:border-ember-500 focus:outline-none"
+                className="mb-3 w-full rounded-lg border border-night-700 bg-night-900/70 px-3 py-2.5 font-ui text-sm text-parchment-50 focus:border-ember-500 focus:outline-none"
               >
                 <option value="public">Pública (aparece no catálogo)</option>
                 <option value="unlisted">Não listada (só por link)</option>
                 <option value="private">Privada (só você)</option>
               </select>
 
-              <label htmlFor="notes" className="mb-1 block font-ui text-xs text-ink-300">
+              <label htmlFor="notes" className="mb-1 block font-ui text-xs text-parchment-300">
                 Notas da versão
               </label>
               <textarea
@@ -266,7 +266,7 @@ export function StudioAdventurePage() {
                 onChange={(event) => setReleaseNotes(event.target.value)}
                 rows={3}
                 maxLength={1000}
-                className="mb-3 w-full resize-y rounded-lg border border-ink-700 bg-ink-900/70 px-3 py-2.5 font-ui text-[13px] text-ink-50 focus:border-ember-500 focus:outline-none"
+                className="mb-3 w-full resize-y rounded-lg border border-night-700 bg-night-900/70 px-3 py-2.5 font-ui text-[13px] text-parchment-50 focus:border-ember-500 focus:outline-none"
               />
 
               {publish.error && (
@@ -297,9 +297,9 @@ export function StudioAdventurePage() {
           ) : (
             <Panel>
               <PanelTitle>Sem rascunho aberto</PanelTitle>
-              <p className="font-ui text-[13px] text-ink-300">
+              <p className="font-ui text-[13px] text-parchment-300">
                 A versão publicada é imutável. Para continuar editando, abra uma nova versão pela
-                API (<code className="text-ink-400">POST /api/adventures/:id/versions</code>) — a
+                API (<code className="text-parchment-400">POST /api/adventures/:id/versions</code>) — a
                 interface de edição de nós é o próximo passo do Studio.
               </p>
             </Panel>

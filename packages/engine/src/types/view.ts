@@ -1,4 +1,10 @@
-import type { AdventureMetadata, AssetDefinition, NodeAudio, NodeType } from './adventure';
+import type {
+  AdventureMetadata,
+  AssetDefinition,
+  NodeAudio,
+  NodeChapter,
+  NodeType,
+} from './adventure';
 import type { Id, JsonPrimitive } from './json';
 import type { GameStatus, ResourcePool } from './state';
 
@@ -14,6 +20,14 @@ export interface ChoiceView {
   available: boolean;
   /** Motivo do bloqueio, quando `available` e falso. */
   blockedReason?: string;
+  /** `true` quando a escolha declara condicoes (liberada ou nao). */
+  conditional: boolean;
+  /**
+   * Resumo do que o personagem cumpre para ter esta opcao, quando ela esta
+   * liberada por condicoes -- ex.: "Corda (1)". Permite destacar na interface
+   * a escolha que foi conquistada, e nao a que sempre esteve ali.
+   */
+  satisfiedLabel?: string;
   icon?: string;
   order?: number;
   /** Custos anunciados ao jogador antes de confirmar. */
@@ -149,6 +163,7 @@ export interface NodeView {
     id: Id;
     type: NodeType;
     title?: string;
+    chapter?: NodeChapter;
     text?: string;
     image?: AssetView | null;
     media?: Array<AssetView & { caption?: string; position?: string }>;
