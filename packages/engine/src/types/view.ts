@@ -142,6 +142,12 @@ export interface CharacterSheetView {
   armor: number;
   skills: Array<{ id: Id; name: string; kind: string; description?: string }>;
   appearance: Record<Id, JsonPrimitive>;
+  /**
+   * Cores declaradas pelo autor para as opcoes de aparencia escolhidas
+   * (`cor-da-pele` -> `#c08a5c`). Permite ao cliente desenhar um retrato
+   * coerente com a ficha sem precisar carregar o documento da aventura.
+   */
+  appearanceColors: Record<Id, string>;
   description?: string;
   pendingAttributePoints: number;
 }

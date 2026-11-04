@@ -6,6 +6,7 @@ import { ChoiceList } from '../components/player/ChoiceList';
 import { CombatPanel } from '../components/player/CombatPanel';
 import { MerchantPanel } from '../components/player/MerchantPanel';
 import { NarrationBar } from '../components/player/NarrationBar';
+import { SectionDialog } from '../components/player/SectionDialog';
 import { SkillCheckPanel } from '../components/player/SkillCheckPanel';
 import {
   HistorySection,
@@ -14,7 +15,12 @@ import {
   type SectionActions,
 } from '../components/player/sections';
 import { IconBook, IconChevronDown, IconClock, IconScroll } from '../components/icons';
-import { OrnateDivider, OrnateFrame, ParchmentPanel } from '../components/ornate';
+import {
+  DecorativeVignette,
+  OrnateDivider,
+  OrnateFrame,
+  ParchmentPanel,
+} from '../components/ornate';
 import { Badge, Button, ErrorNotice, LoadingBlock, Narrative, cx } from '../components/ui';
 import { useNarration } from '../hooks/use-narration';
 import { ApiError } from '../lib/api-client';
@@ -52,7 +58,7 @@ export function PlayPage() {
   const autoPlayNarration = useUiStore((state) => state.narration.autoPlay);
 
   const [pendingChoiceId, setPendingChoiceId] = useState<string | null>(null);
-  const [openSection, setOpenSection] = useState<string | null>('inventario');
+  const [dialogSection, setDialogSection] = useState<string | null>(null);
   const [openMobile, setOpenMobile] = useState<string | null>('missoes');
 
   const view = data?.view;
@@ -328,23 +334,21 @@ export function PlayPage() {
         </span>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[288px_minmax(0,1fr)_320px]">
+      <div className="grid gap-4 lg:grid-cols-[272px_minmax(0,1fr)_300px] xl:grid-cols-[288px_minmax(0,1fr)_324px]">
         {/* ------------------------------------------------- trilho esquerdo */}
-        <aside className="hidden xl:block">
+        <aside className="hidden lg:block">
           <div className="sticky top-[88px]">
             <CharacterRail
               view={view}
-              events={events}
-              actions={sectionActions}
-              openSection={openSection}
-              onToggleSection={(id) => setOpenSection((current) => (current === id ? null : id))}
+              activeSection={dialogSection}
+              onOpenSection={(id) => setDialogSection(id)}
             />
           </div>
         </aside>
 
         {/* -------------------------------------------------- coluna central */}
         <div className="min-w-0 space-y-4">
-          <div className="xl:hidden">
+          <div className="lg:hidden">
             <CharacterStrip view={view} />
           </div>
 
@@ -356,7 +360,7 @@ export function PlayPage() {
           {interactions}
 
           {/* ---------------------------------- acordeoes (celular e tablet) */}
-          <div className="space-y-2.5 xl:hidden">
+          <div className="space-y-2.5 lg:hidden">
             {PLAYER_SECTIONS.map((section) => {
               const Icon = section.icon;
               const open = openMobile === section.id;
@@ -398,14 +402,20 @@ export function PlayPage() {
         </div>
 
         {/* --------------------------------------------------- trilho direito */}
-        <aside className="hidden space-y-4 xl:block">
+        <aside className="hidden space-y-4 lg:block">
           <div className="sticky top-[88px] space-y-4">
             <ParchmentPanel bodyClassName="p-4">
               <div className="mb-3 flex items-center gap-2">
                 <IconScroll className="h-[18px] w-[18px] text-sepia-600" />
                 <h2 className="font-display text-[1.05rem] text-sepia-800">Missões</h2>
               </div>
-              <QuestsSection view={view} actions={sectionActions} events={events} tone="parchment" />
+              <QuestsSection
+                view={view}
+                actions={sectionActions}
+                events={events}
+                tone="parchment"
+                collapseAfter={3}
+              />
             </ParchmentPanel>
 
             <ParchmentPanel bodyClassName="p-4">
@@ -414,10 +424,28 @@ export function PlayPage() {
                 <h2 className="font-display text-[1.05rem] text-sepia-800">Histórico</h2>
               </div>
               <HistorySection view={view} actions={sectionActions} events={events} tone="parchment" />
+              <DecorativeVignette className="-mx-4 -mb-4 mt-3 h-20 text-sepia-500/45" />
             </ParchmentPanel>
           </div>
         </aside>
       </div>
+
+      {dialogSection && (() => {
+        const section = PLAYER_SECTIONS.find((entry) => entry.id === dialogSection);
+        if (!section) {
+          return null;
+        }
+        const Icon = section.icon;
+        return (
+          <SectionDialog
+            title={section.label}
+            icon={<Icon className="h-5 w-5" />}
+            onClose={() => setDialogSection(null)}
+          >
+            {section.render({ view, actions: sectionActions, events })}
+          </SectionDialog>
+        );
+      })()}
     </div>
   );
 }

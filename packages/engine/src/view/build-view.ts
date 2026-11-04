@@ -181,9 +181,33 @@ function buildCharacterSheet(compiled: CompiledAdventure, state: GameState): Cha
       };
     }),
     appearance: character.appearance,
+    appearanceColors: resolveAppearanceColors(compiled, character.appearance),
     ...(character.description !== undefined ? { description: character.description } : {}),
     pendingAttributePoints: character.pendingAttributePoints ?? 0,
   };
+}
+
+/** Traduz as opcoes de aparencia escolhidas nas cores que o autor declarou. */
+function resolveAppearanceColors(
+  compiled: CompiledAdventure,
+  appearance: Record<Id, JsonPrimitive>,
+): Record<Id, string> {
+  const colors: Record<Id, string> = {};
+  for (const field of compiled.doc.characterCreation.appearanceFields ?? []) {
+    const chosen = appearance[field.id];
+    if (chosen === undefined || chosen === null) {
+      continue;
+    }
+    if (field.kind === 'color' && typeof chosen === 'string') {
+      colors[field.id] = chosen;
+      continue;
+    }
+    const option = (field.options ?? []).find((entry) => entry.id === chosen);
+    if (option?.color) {
+      colors[field.id] = option.color;
+    }
+  }
+  return colors;
 }
 
 function buildInventory(compiled: CompiledAdventure, state: GameState): InventoryItemView[] {

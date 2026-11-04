@@ -176,7 +176,7 @@ loadSessions();
 const USER = {
   id: 'preview-user',
   email: 'preview@lonetale.local',
-  displayName: 'Jogador de Pre-visualizacao',
+  displayName: 'Cadu',
   role: 'author',
   locale: 'pt-BR',
 } as const;

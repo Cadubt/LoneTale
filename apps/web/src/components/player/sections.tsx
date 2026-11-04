@@ -1,5 +1,5 @@
 import type { NodeView } from '@lonetale/engine';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import type { PersistedEvent } from '../../lib/queries';
 import {
@@ -9,6 +9,7 @@ import {
   IconCart,
   IconChat,
   IconCheck,
+  IconChevronDown,
   IconClock,
   IconDice,
   IconFlag,
@@ -278,17 +279,38 @@ const QUEST_LABELS: Record<string, string> = {
   failed: 'fracassada',
 };
 
-/** Missoes com caixa de selecao, como numa lista de tarefas do diario. */
-export function QuestsSection({ view, tone = 'dark' }: SectionProps & { tone?: 'dark' | 'parchment' }) {
+/**
+ * Missoes com caixa de selecao, como numa lista de tarefas do diario.
+ *
+ * `collapseAfter` mantem o painel lateral curto: as missoes em andamento ficam
+ * a vista e o resto some atras de "Outras missões (N)", porque uma lista que
+ * cresce sem limite empurra o historico para fora da tela.
+ */
+export function QuestsSection({
+  view,
+  tone = 'dark',
+  collapseAfter,
+}: SectionProps & { tone?: 'dark' | 'parchment'; collapseAfter?: number }) {
+  const [showAll, setShowAll] = useState(false);
+
   if (view.quests.length === 0) {
     return <Empty>Nenhuma missão ainda.</Empty>;
   }
 
   const parchment = tone === 'parchment';
+  const ordered = [...view.quests].sort((left, right) => {
+    const weight = (status: string) => (status === 'active' ? 0 : status === 'available' ? 1 : 2);
+    return weight(left.status) - weight(right.status);
+  });
+
+  const visible =
+    collapseAfter !== undefined && !showAll ? ordered.slice(0, collapseAfter) : ordered;
+  const hidden = ordered.length - visible.length;
 
   return (
+    <>
     <ul className="space-y-2.5">
-      {view.quests.map((quest) => {
+      {visible.map((quest) => {
         const done = quest.status === 'completed';
         const failed = quest.status === 'failed';
         return (
@@ -343,6 +365,41 @@ export function QuestsSection({ view, tone = 'dark' }: SectionProps & { tone?: '
         );
       })}
     </ul>
+
+    {hidden > 0 && (
+      <button
+        type="button"
+        onClick={() => setShowAll(true)}
+        className={cx(
+          'tap mt-2 flex w-full items-center gap-2 border-t pt-2 text-left font-display text-[0.9rem]',
+          parchment
+            ? 'border-bronze-400/40 text-sepia-700 hover:text-sepia-900'
+            : 'border-bronze-600/60 text-parchment-300 hover:text-parchment-100',
+        )}
+        aria-expanded={false}
+      >
+        <span className="mr-auto">Outras missões ({hidden})</span>
+        <IconChevronDown className="h-4 w-4" />
+      </button>
+    )}
+
+    {showAll && collapseAfter !== undefined && (
+      <button
+        type="button"
+        onClick={() => setShowAll(false)}
+        className={cx(
+          'tap mt-2 flex w-full items-center gap-2 border-t pt-2 text-left font-display text-[0.9rem]',
+          parchment
+            ? 'border-bronze-400/40 text-sepia-700 hover:text-sepia-900'
+            : 'border-bronze-600/60 text-parchment-300 hover:text-parchment-100',
+        )}
+        aria-expanded
+      >
+        <span className="mr-auto">Mostrar menos</span>
+        <IconChevronDown className="h-4 w-4 rotate-180" />
+      </button>
+    )}
+    </>
   );
 }
 

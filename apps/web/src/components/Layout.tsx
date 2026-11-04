@@ -221,7 +221,14 @@ export function Layout() {
             <IconMenu className="h-6 w-6" />
           </button>
 
-          <NavLink to="/" className="mr-auto min-w-0 lg:mr-6">
+          {/* A marca ocupa um bloco proprio, separado da navegacao por um
+              friso de metal -- como a lombada de um livro ao lado do indice. */}
+          {/* No celular a marca fica centrada entre o menu e a conta; no
+              desktop encosta a esquerda, separada da navegacao por um friso. */}
+          <NavLink
+            to="/"
+            className="flex min-w-0 flex-1 justify-center self-stretch lg:mr-5 lg:flex-none lg:items-center lg:justify-start lg:border-r lg:border-bronze-600/70 lg:pr-5"
+          >
             <Brand />
           </NavLink>
 

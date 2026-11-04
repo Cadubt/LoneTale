@@ -69,9 +69,7 @@ export function NarrationBar({
           aria-label={playing ? 'Pausar narração' : narration.paused ? 'Continuar narração' : 'Narrar'}
         >
           {playing ? <IconPause className="h-5 w-5" /> : <IconPlay className="h-5 w-5" />}
-          <span className="hidden sm:inline">
-            {playing ? 'Pausar' : narration.paused ? 'Continuar' : 'Narrar'}
-          </span>
+          <span>{playing ? 'Pausar' : narration.paused ? 'Continuar' : 'Narrar'}</span>
         </button>
 
         {narration.speaking && (
