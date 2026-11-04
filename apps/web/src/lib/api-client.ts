@@ -18,9 +18,13 @@ export class ApiError extends Error {
   readonly currentSequence?: number;
 
   constructor(status: number, body: ApiErrorBody) {
+    // `||` e nao `??` de proposito: uma mensagem vazia precisa cair no texto
+    // padrao igual a uma ausente. Sob HTTP/2 nao existe reason phrase, entao
+    // `response.statusText` vem como string vazia — e uma mensagem vazia nao
+    // chega a ser renderizada, deixando a falha invisivel para quem usa.
     const message = Array.isArray(body.message)
       ? body.message.join(' ')
-      : (body.message ?? `Falha na requisicao (${status}).`);
+      : body.message || `Falha na requisição (${status}).`;
     super(message);
     this.name = 'ApiError';
     this.status = status;
@@ -109,7 +113,11 @@ async function parseError(response: Response): Promise<ApiError> {
   try {
     body = (await response.json()) as ApiErrorBody;
   } catch {
-    body = { message: response.statusText };
+    // Resposta sem JSON — tipicamente um erro do proprio host, antes de a API
+    // ser alcancada. `statusText` e vazio sob HTTP/2, e nesse caso e melhor
+    // nao inventar mensagem nenhuma: o ApiError tem um texto padrao com o
+    // codigo, que diz mais do que uma string vazia.
+    body = response.statusText ? { message: response.statusText } : {};
   }
   return new ApiError(response.status, body);
 }
